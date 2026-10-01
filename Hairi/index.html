@@ -185,7 +185,31 @@ async function wa(t){
 }
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));const n={home:'n1',catalog:'n2',estimate:'n3',booking:'n4'}[id];if(n)document.getElementById(n).classList.add('active');window.scrollTo(0,0);if(id==='catalog')renderCatalog('Semua');if(id==='estimate')updateForm()}
 function openCatalog(cat){show('catalog');renderCatalog(cat)}
-function renderCatalog(cat){const g=document.getElementById('catalogGrid');g.innerHTML='';CATALOG.filter(x=>cat==='Semua'||x[0]===cat).forEach(x=>{const d=document.createElement('div');d.className='item';const img=document.createElement('img');img.src=x[1];img.onclick=()=>preview(x[1],x[0]);const name=document.createElement('div');name.textContent=x[0];d.append(img,name);g.appendChild(d)})}
+let customerCatalogItems=[];
+function catalogImageUrl(item){
+  const path=String(item?.image_path||'').trim();
+  if(/^https?:\/\//i.test(path))return path;
+  if(path){const clean=path.replace(/^catalog\//,'').replace(/^\//,'');return supabaseClient.storage.from('catalog').getPublicUrl(clean).data.publicUrl;}
+  const raw=String(item?.image_url||'').trim();
+  if(/^https?:\/\//i.test(raw))return raw;
+  if(raw)return 'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+raw.replace(/^\.\//,'').replace(/^\//,'');
+  return '';
+}
+async function renderCatalog(cat){
+  const g=document.getElementById('catalogGrid');
+  g.innerHTML='<div style="padding:18px">⏳ Memuatkan katalog terkini...</div>';
+  try{
+    const {data,error}=await supabaseClient.from('catalog_items').select('id,name,category,description,image_url,image_path,active,created_at').eq('active',true).order('created_at',{ascending:false});
+    if(error)throw error;
+    customerCatalogItems=(data||[]).filter(x=>x.name&&(x.image_url||x.image_path));
+  }catch(err){console.error('Gagal memuat katalog admin:',err);customerCatalogItems=[];}
+  let items=customerCatalogItems.map(x=>({name:x.name,category:x.category||'Lain-lain',url:catalogImageUrl(x),id:x.id}));
+  if(!items.length)items=CATALOG.map((x,i)=>({name:x[0],category:x[0],url:'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+x[1],id:'legacy-'+i}));
+  if(cat!=='Semua')items=items.filter(x=>x.category===cat);
+  g.innerHTML='';
+  if(!items.length){g.innerHTML='<div style="padding:18px">Tiada item dalam kategori ini.</div>';return;}
+  items.forEach(x=>{const d=document.createElement('div');d.className='item';const img=document.createElement('img');img.src=x.url;img.alt=x.name;img.loading='lazy';img.onerror=function(){this.onerror=null;this.alt='Gambar tidak dapat dimuat';this.style.background='#f1f1f1';this.style.objectFit='contain';};img.onclick=()=>preview(x.url,x.name);const name=document.createElement('div');name.textContent=x.name;d.append(img,name);g.appendChild(d);});
+}
 function preview(src,name){document.getElementById('previewImg').src=src;document.getElementById('previewName').textContent=name;document.getElementById('preview').classList.add('show')}function closePreview(){document.getElementById('preview').classList.remove('show')}
 function updateForm(){const t=document.getElementById('type').value,m=document.getElementById('material');m.innerHTML=Object.keys(MATERIALS).map(x=>'<option>'+x+'</option>').join('');let fields='';if(t==='lower'){fields='<div class="field"><label>Sekaki selari</label><input id="l" type="number" min="0" step="0.1" oninput="calcEstimate()" placeholder="Contoh 10"></div>';}else if(t==='upper'){fields='<div class="field"><label>Jenis kabinet atas</label><select id="upperHeight" onchange="calcEstimate()"><option value="standard">Standard</option><option value="ceiling">Sampai siling</option></select></div><div class="field"><label>Sekaki selari</label><input id="l" type="number" min="0" step="0.1" oninput="calcEstimate()" placeholder="Contoh 10"></div>';}else{fields='<div class="field"><label>Lebar (kaki)</label><input id="w" type="number" min="0" step="0.1" oninput="calcEstimate()" placeholder="Contoh 10"></div><div class="field"><label>Tinggi (kaki)</label><input id="h" type="number" min="0" step="0.1" oninput="calcEstimate()" placeholder="Contoh 7"></div>'; }document.getElementById('measureFields').innerHTML=fields;m.onchange=calcEstimate;calcEstimate()}
 function calcEstimate(){const t=document.getElementById('type').value,m=document.getElementById('material').value||'Melamine';let r=null,a=0;if(t==='lower'){r=MATERIALS[m].lower;a=+document.getElementById('l')?.value||0;}else if(t==='upper'){r=document.getElementById('upperHeight')?.value==='ceiling'?MATERIALS[m].upperCeiling:MATERIALS[m].upperStandard;a=+document.getElementById('l')?.value||0;}else{document.getElementById('estimatePrice').textContent='Harga akan diberikan selepas ukuran';return;}document.getElementById('estimatePrice').textContent=money(a*r)}
