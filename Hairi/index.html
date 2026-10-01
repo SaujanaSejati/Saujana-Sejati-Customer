@@ -187,11 +187,19 @@ function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.re
 function openCatalog(cat){show('catalog');renderCatalog(cat)}
 let customerCatalogItems=[];
 function catalogImageUrl(item){
-  const path=String(item?.image_path||'').trim();
-  if(/^https?:\/\//i.test(path))return path;
-  if(path){const clean=path.replace(/^catalog\//,'').replace(/^\//,'');return supabaseClient.storage.from('catalog').getPublicUrl(clean).data.publicUrl;}
   const raw=String(item?.image_url||'').trim();
+  const path=String(item?.image_path||'').trim();
+  // Utamakan URL gambar yang disimpan semasa item katalog lama dibuat.
   if(/^https?:\/\//i.test(raw))return raw;
+  if(raw && /\.(png|jpe?g|webp|gif|avif)(\?.*)?$/i.test(raw)){
+    const clean=raw.replace(/^\.\//,'').replace(/^\//,'');
+    return 'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+clean;
+  }
+  if(/^https?:\/\//i.test(path))return path;
+  if(path){
+    const clean=path.replace(/^catalog\//,'').replace(/^\//,'');
+    return supabaseClient.storage.from('catalog').getPublicUrl(clean).data.publicUrl;
+  }
   if(raw)return 'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+raw.replace(/^\.\//,'').replace(/^\//,'');
   return '';
 }
