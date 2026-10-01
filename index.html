@@ -223,7 +223,15 @@ async function renderCatalog(cat){
   items.forEach(x=>{
     const d=document.createElement('div');d.className='item';
     const img=document.createElement('img');img.src=x.url;img.alt=x.name;img.loading='lazy';
-    img.onerror=function(){this.onerror=null;this.alt='Gambar tidak dapat dimuat';this.style.background='#f1f1f1';this.style.objectFit='contain';};
+    img.onerror=function(){
+      this.onerror=null;
+      const candidates=CATALOG.filter(row=>row[0]===x.category||row[0]===x.name);
+      const fallback=candidates[0]||CATALOG.find(row=>row[0]===x.category);
+      if(fallback&&!String(x.url).includes(fallback[1])){
+        this.onerror=function(){this.onerror=null;this.alt='Gambar belum tersedia';this.style.background='#f1f1f1';this.style.objectFit='contain';};
+        this.src='https://saujanasejati.github.io/Saujana-Sejati-Customer/'+fallback[1];
+      }else{this.alt='Gambar belum tersedia';this.style.background='#f1f1f1';this.style.objectFit='contain';}
+    };
     img.onclick=()=>preview(x.url,x.name);
     const name=document.createElement('div');name.textContent=x.name;
     d.append(img,name);g.appendChild(d);
