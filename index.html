@@ -229,12 +229,18 @@ async function renderCatalog(cat){
     const d=document.createElement('div');d.className='item';
     const img=document.createElement('img');img.src=x.url;img.alt=x.name;img.loading='lazy';
     img.onerror=()=>{
+      // Ikut fallback katalog Admin: image_url dahulu, kemudian padanan gambar statik asal.
       const fallback=String(x.image_url||'').trim();
-      const fallbackUrl=fallback?(/^https?:\/\//i.test(fallback)?fallback:'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+fallback.replace(/^\.\//,'').replace(/^\//,'')):'';
-      if(fallbackUrl&&img.src!==fallbackUrl&&img.dataset.fallbackTried!=='1'){img.dataset.fallbackTried='1';img.src=fallbackUrl;return;}
-      const staticMatch=customerStaticCatalogRows().find(row=>row.id===String(x.legacy_static_id||x.id));
-      if(staticMatch&&staticMatch.image_url&&img.dataset.staticTried!=='1'&&img.src!==staticMatch.image_url){img.dataset.staticTried='1';img.src=staticMatch.image_url;return;}
-      img.onerror=null;img.removeAttribute('src');img.alt='Gambar tidak tersedia';img.style.background='#f1f1f1';img.style.objectFit='contain';
+      const fallbackUrl=fallback?( /^https?:\/\//i.test(fallback) ? fallback : 'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+fallback.replace(/^\.\//,'').replace(/^\//,'') ):'';
+      if(fallbackUrl && img.src!==fallbackUrl && img.dataset.fallbackTried!=='1'){
+        img.dataset.fallbackTried='1';img.src=fallbackUrl;return;
+      }
+      const legacyId=String(x.legacy_static_id||x.id||'');
+      const staticMatch=customerStaticCatalogRows().find(row=>row.id===legacyId);
+      if(staticMatch && staticMatch.image_url && img.dataset.staticTried!=='1' && img.src!==staticMatch.image_url){
+        img.dataset.staticTried='1';img.src=staticMatch.image_url;return;
+      }
+      img.onerror=null;img.removeAttribute('src');img.alt='Gambar belum tersedia';img.style='object-fit:contain;background:#f1f1f1';
     };
     img.onclick=()=>preview(x.url,x.name);
     const name=document.createElement('div');name.textContent=x.name;
