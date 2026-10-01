@@ -96,8 +96,8 @@
     </div>
   </div>
 </div>
-        <div class="field"><label>Jumlah Deposit (RM) *</label><input id="bkDeposit" type="number" min="0" step="0.01" placeholder="Contoh: 500"></div>
-<div class="field"><label>Bukti Deposit *</label><input id="bkDepositProof" type="file" accept="image/*"></div>
+        <div class="field"><label>Jumlah Deposit (RM) — Pilihan</label><input id="bkDeposit" type="number" min="0" step="0.01" placeholder="Boleh dikosongkan jika belum bayar"></div>
+<div class="field"><label>Bukti Deposit — Pilihan</label><input id="bkDepositProof" type="file" accept="image/*"><small style="display:block;color:#68707a;margin-top:5px">Tidak wajib. Boleh hantar booking dahulu tanpa bukti deposit.</small></div>
 <div class="field full"><label>Alamat / Lokasi *</label><input id="bkAddress" type="text" placeholder="Contoh: Taman Seri Indah, Ipoh, Perak"></div>
        <div class="field full">
   <label>Catatan Tambahan</label>
@@ -229,16 +229,8 @@ async function sendBooking(){
     return;
   }
 
-  if(!deposit||Number(deposit)<=0){
-    alert('Sila masukkan jumlah deposit.');
-    return;
-  }
-
-  if(!depositProof){
-    alert('Sila upload bukti deposit.');
-    return;
-  }
-
+  // Deposit dan bukti deposit adalah pilihan; booking boleh dihantar walaupun kosong.
+  const depositAmount=deposit.trim()!==''&&Number(deposit)>0?Number(deposit):0;
   let depositProofPath=null;
 
   const btn=document.querySelector('.booking-wa');
@@ -248,23 +240,24 @@ async function sendBooking(){
   btn.innerHTML='⏳ Menyimpan booking...';
 
   try{
-    const ext=(depositProof.name.split('.').pop()||'jpg')
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g,'');
+    if(depositProof){
+      const ext=(depositProof.name.split('.').pop()||'jpg')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g,'');
 
-    const filePath='customer/'+crypto.randomUUID()+'.'+(ext||'jpg');
+      const filePath='customer/'+crypto.randomUUID()+'.'+(ext||'jpg');
 
-    const {error:uploadError}=await supabaseClient
-      .storage
-      .from('deposit-proofs')
-      .upload(filePath,depositProof,{
-        contentType:depositProof.type||'image/jpeg',
-        upsert:false
-      });
+      const {error:uploadError}=await supabaseClient
+        .storage
+        .from('deposit-proofs')
+        .upload(filePath,depositProof,{
+          contentType:depositProof.type||'image/jpeg',
+          upsert:false
+        });
 
-    if(uploadError) throw uploadError;
-
-    depositProofPath=filePath;
+      if(uploadError) throw uploadError;
+      depositProofPath=filePath;
+    }
 
     const bookingId=crypto.randomUUID();
 
@@ -284,7 +277,7 @@ async function sendBooking(){
       notes:note||null,
       accessories:accessories,
       estimated_price:null,
-      deposit_amount:Number(deposit)||0,
+      deposit_amount:depositAmount,
       deposit_proof_path:depositProofPath,
       status:'baru',
       source:'customer_web'
