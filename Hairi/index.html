@@ -216,7 +216,23 @@ async function renderCatalog(cat){
   if(cat!=='Semua')items=items.filter(x=>x.category===cat);
   g.innerHTML='';
   if(!items.length){g.innerHTML='<div style="padding:18px">Tiada item dalam kategori ini.</div>';return;}
-  items.forEach(x=>{const d=document.createElement('div');d.className='item';const img=document.createElement('img');img.src=x.url;img.alt=x.name;img.loading='lazy';img.onerror=function(){this.onerror=null;this.alt='Gambar tidak dapat dimuat';this.style.background='#f1f1f1';this.style.objectFit='contain';};img.onclick=()=>preview(x.url,x.name);const name=document.createElement('div');name.textContent=x.name;d.append(img,name);g.appendChild(d);});
+  items.forEach(x=>{
+    const d=document.createElement('div');d.className='item';
+    const img=document.createElement('img');img.src=x.url;img.alt=x.name;img.loading='lazy';
+    img.onerror=function(){
+      // Jika URL rekod lama rosak, cuba gambar statik asal untuk kategori/produk itu.
+      this.onerror=null;
+      const candidates=CATALOG.filter(row=>row[0]===x.category||row[0]===x.name);
+      const fallback=candidates[0]||CATALOG.find(row=>row[0]===x.category);
+      if(fallback && !String(x.url).includes(fallback[1])){
+        const backup='https://saujanasejati.github.io/Saujana-Sejati-Customer/'+fallback[1];
+        this.onerror=function(){this.onerror=null;this.alt='Gambar belum tersedia';this.style.background='#f1f1f1';this.style.objectFit='contain';};
+        this.src=backup;
+      }else{this.alt='Gambar belum tersedia';this.style.background='#f1f1f1';this.style.objectFit='contain';}
+    };
+    img.onclick=()=>preview(img.src,x.name);
+    const name=document.createElement('div');name.textContent=x.name;d.append(img,name);g.appendChild(d);
+  });
 }
 function preview(src,name){document.getElementById('previewImg').src=src;document.getElementById('previewName').textContent=name;document.getElementById('preview').classList.add('show')}function closePreview(){document.getElementById('preview').classList.remove('show')}
 function updateForm(){const t=document.getElementById('type').value,m=document.getElementById('material');m.innerHTML=Object.keys(MATERIALS).map(x=>'<option>'+x+'</option>').join('');let fields='';if(t==='lower'){fields='<div class="field"><label>Sekaki selari</label><input id="l" type="number" min="0" step="0.1" oninput="calcEstimate()" placeholder="Contoh 10"></div>';}else if(t==='upper'){fields='<div class="field"><label>Jenis kabinet atas</label><select id="upperHeight" onchange="calcEstimate()"><option value="standard">Standard</option><option value="ceiling">Sampai siling</option></select></div><div class="field"><label>Sekaki selari</label><input id="l" type="number" min="0" step="0.1" oninput="calcEstimate()" placeholder="Contoh 10"></div>';}else{fields='<div class="field"><label>Lebar (kaki)</label><input id="w" type="number" min="0" step="0.1" oninput="calcEstimate()" placeholder="Contoh 10"></div><div class="field"><label>Tinggi (kaki)</label><input id="h" type="number" min="0" step="0.1" oninput="calcEstimate()" placeholder="Contoh 7"></div>'; }document.getElementById('measureFields').innerHTML=fields;m.onchange=calcEstimate;calcEstimate()}
