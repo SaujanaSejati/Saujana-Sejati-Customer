@@ -207,7 +207,7 @@ async function renderCatalog(cat){
   const g=document.getElementById('catalogGrid');
   g.innerHTML='<div style="padding:18px">⏳ Memuatkan katalog terkini...</div>';
   try{
-    const {data,error}=await supabaseClient.from('catalog_items').select('id,name,category,description,image_url,image_path,active,created_at').eq('active',true).order('created_at',{ascending:false});
+    const {data,error}=await supabaseClient.from('catalog_items').select('id,name,category,description,image_url,image_path,active,created_at').order('created_at',{ascending:false});
     if(error)throw error;
     customerCatalogItems=(data||[]).filter(x=>x.name&&(x.image_url||x.image_path));
   }catch(err){console.error('Gagal memuat katalog admin:',err);customerCatalogItems=[];}
@@ -222,8 +222,14 @@ async function renderCatalog(cat){
     img.onerror=function(){
       // Jika URL rekod lama rosak, cuba gambar statik asal untuk kategori/produk itu.
       this.onerror=null;
-      const candidates=CATALOG.filter(row=>row[0]===x.category||row[0]===x.name);
-      const fallback=candidates[0]||CATALOG.find(row=>row[0]===x.category);
+      const label=(String(x.name||'')+' '+String(x.category||'')).toLowerCase();
+      let fallback=CATALOG.find(row=>row[0]===x.category||row[0]===x.name);
+      if(!fallback && /rak tv|tv cabinet/.test(label))fallback=CATALOG.find(row=>row[1].startsWith('rak-tv-'));
+      if(!fallback && /almari|wardrobe|bilik/.test(label))fallback=CATALOG.find(row=>row[1].startsWith('almari-bilik-'));
+      if(!fallback && /panel|dinding/.test(label))fallback=CATALOG.find(row=>row[1].startsWith('panel-dinding-'));
+      if(!fallback && /tangga/.test(label))fallback=CATALOG.find(row=>row[1].startsWith('bawah-tangga-'));
+      if(!fallback && /display/.test(label))fallback=CATALOG.find(row=>row[1].startsWith('rak-display-'));
+      if(!fallback && /dapur|kitchen|kabinet/.test(label))fallback=CATALOG.find(row=>row[1].startsWith('kabinet-dapur-'));
       if(fallback && !String(x.url).includes(fallback[1])){
         const backup='https://saujanasejati.github.io/Saujana-Sejati-Customer/'+fallback[1];
         this.onerror=function(){this.onerror=null;this.alt='Gambar belum tersedia';this.style.background='#f1f1f1';this.style.objectFit='contain';};
