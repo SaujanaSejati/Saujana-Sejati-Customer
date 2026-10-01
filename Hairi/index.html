@@ -187,46 +187,58 @@ function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.re
 function openCatalog(cat){show('catalog');renderCatalog(cat)}
 let customerCatalogItems=[];
 function catalogImageUrl(item){
-  // Samakan keutamaan URL dengan katalog Admin: image_path dahulu,
-  // kerana rekod lama mungkin menyimpan fail sebenar di Supabase Storage.
   const path=String(item?.image_path||'').trim();
   if(/^https?:\/\//i.test(path))return path;
   if(path){
     try{
-      const clean=path.replace(/^catalog\//,'').replace(/^\//,'');
-      const url=supabaseClient.storage.from('catalog').getPublicUrl(clean)?.data?.publicUrl;
-      if(url)return url;
-    }catch(e){console.warn('Gagal bina URL image_path:',e);}
+      const cleanPath=path.replace(/^catalog\//,'').replace(/^\//,'');
+      const u=supabaseClient.storage.from('catalog').getPublicUrl(cleanPath)?.data?.publicUrl;
+      if(u)return u;
+    }catch(e){}
   }
   const raw=String(item?.image_url||'').trim();
   if(!raw)return '';
   if(/^https?:\/\//i.test(raw))return raw;
   return 'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+raw.replace(/^\.\//,'').replace(/^\//,'');
 }
+function customerStaticCatalogRows(){
+  return CATALOG.map((x,i)=>({id:'static-'+i,name:x[0],category:x[0],description:'Contoh hasil kerja Saujana Sejati Ent',image_url:'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+x[1],active:true,legacy_static_id:'static-'+i,isStatic:true}));
+}
 async function renderCatalog(cat){
   const g=document.getElementById('catalogGrid');
   g.innerHTML='<div style="padding:18px">⏳ Memuatkan katalog terkini...</div>';
+  let records=[];
   try{
-    const {data,error}=await supabaseClient.from('catalog_items').select('id,name,category,description,image_url,image_path,active,created_at').order('created_at',{ascending:false});
+    const {data,error}=await supabaseClient.from('catalog_items').select('*').order('created_at',{ascending:false});
     if(error)throw error;
-    customerCatalogItems=(data||[]).filter(x=>x.name&&(x.image_url||x.image_path));
-  }catch(err){console.error('Gagal memuat katalog admin:',err);customerCatalogItems=[];}
-  let items=customerCatalogItems.map(x=>({name:x.name,category:x.category||'Lain-lain',url:catalogImageUrl(x),id:x.id}));
-  if(!items.length)items=CATALOG.map((x,i)=>({name:x[0],category:x[0],url:'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+x[1],id:'legacy-'+i}));
-  if(cat!=='Semua')items=items.filter(x=>x.category===cat);
+    records=data||[];
+    customerCatalogItems=records;
+  }catch(err){
+    console.error('Gagal memuat katalog admin:',err);
+    customerCatalogItems=[];
+  }
+  // Ikut katalog Admin: gabungkan rekod database dengan katalog asal yang belum ada rekod legacy.
+  const legacyIds=new Set(customerCatalogItems.map(x=>x.legacy_static_id).filter(Boolean));
+  const all=[...customerCatalogItems,...customerStaticCatalogRows().filter(x=>!legacyIds.has(x.id))];
+  let items=all.filter(x=>x.active!==false && x.name && (x.image_url||x.image_path))
+    .map(x=>({name:x.name,category:x.category||'Lain-lain',url:catalogImageUrl(x),image_url:x.image_url||'',image_path:x.image_path||'',id:x.id,legacy_static_id:x.legacy_static_id}));
+  if(cat!=='Semua')items=items.filter(x=>x.category===cat||x.name===cat);
   g.innerHTML='';
   if(!items.length){g.innerHTML='<div style="padding:18px">Tiada item dalam kategori ini.</div>';return;}
   items.forEach(x=>{
     const d=document.createElement('div');d.className='item';
     const img=document.createElement('img');img.src=x.url;img.alt=x.name;img.loading='lazy';
-    img.onerror=function(){
-      this.onerror=null;
-      this.alt='Gambar belum tersedia';
-      this.style.background='#f1f1f1';
-      this.style.objectFit='contain';
+    img.onerror=()=>{
+      const fallback=String(x.image_url||'').trim();
+      const fallbackUrl=fallback?(/^https?:\/\//i.test(fallback)?fallback:'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+fallback.replace(/^\.\//,'').replace(/^\//,'')):'';
+      if(fallbackUrl&&img.src!==fallbackUrl&&img.dataset.fallbackTried!=='1'){img.dataset.fallbackTried='1';img.src=fallbackUrl;return;}
+      const staticMatch=customerStaticCatalogRows().find(row=>row.id===String(x.legacy_static_id||x.id));
+      if(staticMatch&&staticMatch.image_url&&img.dataset.staticTried!=='1'&&img.src!==staticMatch.image_url){img.dataset.staticTried='1';img.src=staticMatch.image_url;return;}
+      img.onerror=null;img.removeAttribute('src');img.alt='Gambar tidak tersedia';img.style.background='#f1f1f1';img.style.objectFit='contain';
     };
-    img.onclick=()=>preview(img.src,x.name);
-    const name=document.createElement('div');name.textContent=x.name;d.append(img,name);g.appendChild(d);
+    img.onclick=()=>preview(x.url,x.name);
+    const name=document.createElement('div');name.textContent=x.name;
+    d.append(img,name);g.appendChild(d);
   });
 }
 function preview(src,name){document.getElementById('previewImg').src=src;document.getElementById('previewName').textContent=name;document.getElementById('preview').classList.add('show')}function closePreview(){document.getElementById('preview').classList.remove('show')}
