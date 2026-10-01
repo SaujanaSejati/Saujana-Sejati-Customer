@@ -242,7 +242,7 @@ async function renderCatalog(cat){
       }
       img.onerror=null;img.removeAttribute('src');img.alt='Gambar belum tersedia';img.style='object-fit:contain;background:#f1f1f1';
     };
-    img.onclick=()=>preview(x.url,x.name);
+    img.onclick=()=>preview(img.currentSrc||img.src||x.url,x.name);
     const name=document.createElement('div');name.textContent=x.name;
     d.append(img,name);g.appendChild(d);
   });
