@@ -503,4 +503,16 @@ async function loadActiveHomepageVideo(){
   const fallbackUrl='Promo%20Video%2001.MP4';
   showVideo(fallbackUrl,'Promo Video 01','Video promosi Saujana Sejati Ent');
 }
+</script>
+<script>
+(function(){
+  const parts=location.pathname.split('/').filter(Boolean);
+  const i=parts.findIndex(p=>p.toLowerCase()==='agent');
+  if(i>=0 && parts[i+1]){
+    const slug=decodeURIComponent(parts[i+1]).trim();
+    if(slug){
+      location.replace('/Saujana-Sejati-Customer/agent/?agent='+encodeURIComponent(slug));
+    }
+  }
+})();
 </script></body></html>
