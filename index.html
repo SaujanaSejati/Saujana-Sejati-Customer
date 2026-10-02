@@ -42,16 +42,20 @@
         <div class="field"><label>Material *</label><select id="bkMaterial"><option>Melamine</option><option>Laminate Formica</option></select></div>
         <div class="field full">
           <label>Ukuran Anggaran Kabinet *</label>
-          <input id="bkMeasurement" type="text" placeholder="Contoh: Kabinet bawah 10 kaki, kabinet atas 8 kaki" aria-describedby="measurementHelp">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px">
+            <label style="font-size:13px">Kaki / Feet (ft)<input id="bkMeasurementFeet" type="number" min="0" step="0.5" placeholder="Contoh: 10" oninput="syncMainMeasurement()" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px"></label>
+            <label style="font-size:13px">Inci / Inches (in)<input id="bkMeasurementInches" type="number" min="0" max="11.99" step="0.5" placeholder="Contoh: 6" oninput="syncMainMeasurement()" style="width:100%;padding:12px;border:1px solid #ccc;border-radius:8px"></label>
+          </div>
+          <input id="bkMeasurement" type="hidden" aria-describedby="measurementHelp">
           <div id="measurementHelp" style="margin-top:9px;padding:13px 14px;border:1px solid #d8e5f5;border-radius:10px;background:#f4f8ff;color:#26384d;font-size:13px;line-height:1.55">
             <div style="font-weight:900;margin-bottom:6px">📏 Cara kira ukuran (kaki selari)</div>
             <ol style="margin:0 0 8px 18px;padding:0">
               <li>Ukur <b>panjang kabinet mengikut dinding</b> dari hujung ke hujung.</li>
               <li>Catat kabinet <b>bawah dan atas secara berasingan</b>. Contoh: bawah 10 kaki, atas 8 kaki.</li>
               <li>Jika kabinet atas sampai siling, tulis sekali: <b>atas 8 kaki — sampai siling</b>.</li>
-              <li>Jika ukuran dalam meter, tukar kepada kaki: <b>1 meter ≈ 3.28 kaki</b>.</li>
+              <li>Masukkan ukuran menggunakan <b>kaki (ft) dan inci (in)</b>. Contoh: 10 kaki 6 inci.</li>
             </ol>
-            <div style="padding-top:7px;border-top:1px solid #d8e5f5"><b>Contoh isi:</b> Kabinet bawah 10 kaki; kabinet atas 8 kaki; atas standard. Ukuran ini anggaran awal sahaja — pihak kami akan datang mengukur dan mengesahkan ukuran sebenar.</div>
+            <div style="padding-top:7px;border-top:1px solid #d8e5f5"><b>Contoh:</b> 10 ft + 6 in. Untuk kabinet bawah dan atas yang berukuran berbeza, masukkan ukuran anggaran yang paling utama dan terangkan ukuran lain di ruangan catatan. Ukuran ini anggaran awal sahaja — pihak kami akan datang mengukur dan mengesahkan ukuran sebenar.</div>
             
           </div>
         </div>
@@ -489,7 +493,25 @@ document.getElementById('bkReferenceImages').addEventListener('change', function
     reader.readAsDataURL(file);
   });
 });
-  let bookingItemRowCounter=0;
+  function syncMainMeasurement(){
+  const ft=document.getElementById('bkMeasurementFeet')?.value;
+  const inch=document.getElementById('bkMeasurementInches')?.value;
+  const parts=[];
+  if(ft!==''&&ft!=null)parts.push(ft+' ft');
+  if(inch!==''&&inch!=null)parts.push(inch+' in');
+  const hidden=document.getElementById('bkMeasurement');
+  if(hidden)hidden.value=parts.join(' ').trim();
+}
+function syncExtraMeasurement(row){
+  const ft=row.querySelector('.extra-item-feet')?.value;
+  const inch=row.querySelector('.extra-item-inches')?.value;
+  const parts=[];
+  if(ft!==''&&ft!=null)parts.push(ft+' ft');
+  if(inch!==''&&inch!=null)parts.push(inch+' in');
+  const hidden=row.querySelector('.extra-item-measurement');
+  if(hidden)hidden.value=parts.join(' ').trim();
+}
+let bookingItemRowCounter=0;
 function addBookingItemRow(){
   const host=document.getElementById('extraBookingItems');if(!host)return;
   const id='extraBookingItem'+(++bookingItemRowCounter);
@@ -507,12 +529,16 @@ function addBookingItemRow(){
         <option value="">Pilih jenis</option><option>Kabinet Dapur</option><option>Almari Bilik</option><option>Rak TV</option><option>Panel Dinding</option><option>Bawah Tangga</option><option>Rak Display</option>
       </select></label>
       <label>Material<select class="extra-item-material" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"><option>Melamine</option><option>Laminate Formica</option></select></label>
-      <label style="grid-column:1/-1">Ukuran anggaran<input class="extra-item-measurement" type="text" placeholder="Contoh: 6 kaki lebar x 7 kaki tinggi" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
+      <div style="grid-column:1/-1"><b style="font-size:13px">Ukuran (untuk panjang/lebar)</b><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:5px">
+        <label>Kaki / Feet (ft)<input class="extra-item-feet" type="number" min="0" step="0.5" placeholder="Contoh: 6" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
+        <label>Inci / Inches (in)<input class="extra-item-inches" type="number" min="0" max="11.99" step="0.5" placeholder="Contoh: 6" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
+      </div><input class="extra-item-measurement" type="hidden"></div>
       <label>Nama warna<input class="extra-item-color-name" type="text" placeholder="Contoh: Oak / Putih" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
       <label>Kod warna katalog<input class="extra-item-color-code" type="text" placeholder="Contoh: E-3134" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
       <label>Warna pilihan (HEX)<div style="display:flex;gap:8px;align-items:center;margin-top:5px"><input class="extra-item-color-hex" type="text" maxlength="7" placeholder="#FFFFFF" style="min-width:0;flex:1;padding:10px;border:1px solid #ccc;border-radius:8px"><input class="extra-item-color-picker" type="color" value="#ffffff" title="Pilih warna" style="width:44px;height:42px;padding:2px" onchange="this.closest('.extra-booking-item').querySelector('.extra-item-color-hex').value=this.value.toUpperCase()"></div></label>
     </div>`;
   host.appendChild(row);
+  row.querySelectorAll('.extra-item-feet,.extra-item-inches').forEach(input=>input.addEventListener('input',()=>syncExtraMeasurement(row)));
 }
 function getBookingItems(){
   const first={
