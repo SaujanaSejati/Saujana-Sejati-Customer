@@ -29,29 +29,44 @@ Deno.serve(async (req) => {
     return json({ error: "Push server configuration incomplete" }, 500);
   }
 
-  const suppliedSecret = req.headers.get("x-saujana-webhook-secret") || "";
-  if (suppliedSecret !== webhookSecret) return json({ error: "Unauthorized" }, 401);
+  // Public VAPID key is not a secret; clients need it to subscribe.
+  if (req.method === "GET") return json({ publicKey: vapidPublic });
 
   let payload: Record<string, unknown>;
   try { payload = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  // Device enrollment: require a server-side enrollment code. Never expose service-role key.
+  if (payload.action === "subscribe") {
+    const enrollmentCode = Deno.env.get("SAUJANA_PUSH_ENROLLMENT_CODE");
+    if (!enrollmentCode || req.headers.get("x-saujana-enrollment-code") !== enrollmentCode) {
+      return json({ error: "Kod pendaftaran tidak sah" }, 401);
+    }
+    const label = payload.recipient_label;
+    const subscription = payload.subscription as Record<string, unknown> | undefined;
+    if (!["Hairi", "Amirul"].includes(String(label)) || !subscription?.endpoint) {
+      return json({ error: "Maklumat pendaftaran tidak lengkap" }, 400);
+    }
+    const { error: saveError } = await supabase.from("web_push_subscriptions").upsert({
+      endpoint: String(subscription.endpoint),
+      subscription,
+      recipient_label: label,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "endpoint" });
+    if (saveError) return json({ error: "Gagal menyimpan pendaftaran" }, 500);
+    return json({ subscribed: true, recipient: label });
+  }
+
+  const suppliedSecret = req.headers.get("x-saujana-webhook-secret") || "";
+  if (suppliedSecret !== webhookSecret) return json({ error: "Unauthorized" }, 401);
   if (payload.type !== "INSERT" || payload.table !== "bookings" || !payload.record) {
     return json({ ignored: true });
   }
 
   const booking = payload.record as Record<string, unknown>;
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-
-  if (booking.id) {
-    const { data: existing } = await supabase
-      .from("web_push_subscriptions").select("id")
-      .eq("endpoint", String((payload.subscription as Record<string, unknown> | undefined)?.endpoint || ""))
-      .limit(1);
-    // No-op: the booking trigger is the only public event source; send to all enrolled devices below.
-    void existing;
-  }
-
   webpush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
   const { data: subscriptions, error } = await supabase
     .from("web_push_subscriptions").select("id, endpoint, subscription, recipient_label");
