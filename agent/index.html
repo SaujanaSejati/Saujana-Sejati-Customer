@@ -25,7 +25,7 @@ iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#fff;z-
     document.getElementById('status').textContent='Pautan agent tidak lengkap. Gunakan /agent/nama-agent';
     return;
   }
-  const target='https://saujanasejati.github.io/Saujana-Sejati-Ent/?agent='+encodeURIComponent(slug);
+  const target='https://saujanasejati.github.io/Saujana-Sejati-Customer/?agent='+encodeURIComponent(slug);
   const frame=document.querySelector('iframe');
   frame.src=target;
   frame.addEventListener('load',()=>{document.getElementById('status').style.display='none';});
