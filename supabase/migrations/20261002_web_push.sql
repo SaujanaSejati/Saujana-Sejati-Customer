@@ -2,7 +2,7 @@
 -- Run this in Supabase SQL Editor as project owner.
 -- Do NOT add public/anon/authenticated SELECT policies to this table.
 
-create extension if not exists pg_net with schema extensions;
+create extension if not exists pg_net;
 create table if not exists public.web_push_subscriptions (
   id uuid primary key default gen_random_uuid(),
   endpoint text not null unique,
