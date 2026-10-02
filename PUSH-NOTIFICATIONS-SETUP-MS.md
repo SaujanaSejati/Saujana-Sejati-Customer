@@ -40,7 +40,7 @@ Function juga memerlukan `SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY`, yang bi
 
 ## 3. Sediakan pangkalan data
 
-Jalankan fail `supabase/migrations/20261002_web_push.sql` dalam Supabase SQL Editor. Ia mewujudkan jadual langganan yang tiada akses awam dan trigger selepas booking baru dimasukkan.
+Pastikan extension `pg_net` dan Vault tersedia dalam projek Supabase. Jalankan fail `supabase/migrations/20261002_web_push.sql` dalam Supabase SQL Editor. Ia mewujudkan jadual langganan yang tiada akses awam dan trigger selepas booking baru dimasukkan.
 
 Kemudian buka Supabase Dashboard → SQL Editor dan simpan dua nilai dalam Vault (jangan letak dalam jadual awam):
 - `saujana_push_function_url` = `https://wvxaiojnxwzcdrczbdup.supabase.co/functions/v1/saujana-web-push`
