@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111"><title>Daftar Push — Saujana Sejati Ent</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:#17191c;font-family:Arial,sans-serif;padding:22px}
+main{max-width:520px;margin:30px auto;background:#fff;padding:24px;border-radius:16px;box-shadow:0 8px 30px #0001}
+h1{font-size:25px;margin-top:0}p{line-height:1.5;color:#4d5560}label{display:block;font-weight:700;margin:16px 0 7px}
+input,select,button{width:100%;padding:13px;border:1px solid #cbd0d6;border-radius:9px;font:inherit}
+button{margin-top:18px;background:#e50914;color:#fff;border:0;font-weight:800;cursor:pointer}
+#status{white-space:pre-wrap;margin-top:16px;padding:12px;border-radius:8px;background:#f4f5f7;line-height:1.45}
+.note{font-size:13px}
+</style></head>
+<body><main>
+<h1>🔔 Daftar Notifikasi Booking</h1>
+<p>Halaman pentadbir Saujana Sejati Ent. Daftarkan setiap telefon sekali sahaja. Gunakan kod pendaftaran yang disimpan dengan selamat.</p>
+<label for="recipient">Telefon milik</label>
+<select id="recipient"><option value="Hairi">Hairi</option><option value="Amirul">Amirul</option></select>
+<label for="code">Kod pendaftaran pentadbir</label>
+<input id="code" type="password" autocomplete="current-password" placeholder="Masukkan kod rahsia" required>
+<button id="register">Aktifkan notifikasi pada telefon ini</button>
+<div id="status" role="status">Belum didaftarkan.</div>
+<p class="note">Pada iPhone: buka website dalam Safari → Share → Add to Home Screen → buka ikon yang ditambah → kembali ke halaman ini dan tekan butang. Benarkan notifikasi apabila diminta.</p>
+</main>
+<script>
+const FUNCTION_URL='https://wvxaiojnxwzcdrczbdup.supabase.co/functions/v1/saujana-web-push';
+const statusBox=document.getElementById('status');
+function say(s){statusBox.textContent=s}
+function urlB64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const raw=atob((base64String+padding).replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)));
+}
+document.getElementById('register').addEventListener('click',async()=>{
+  const btn=document.getElementById('register');
+  const code=document.getElementById('code').value.trim();
+  const recipient=document.getElementById('recipient').value;
+  if(!code){say('Masukkan kod pendaftaran dahulu.');return;}
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){
+    say('Pelayar ini tidak menyokong Web Push. Gunakan Safari pada iPhone yang serasi atau Chrome/Edge pada Android.');return;
+  }
+  btn.disabled=true;btn.textContent='Sedang mendaftar…';
+  try{
+    const keyResponse=await fetch(FUNCTION_URL,{method:'GET'});
+    const keyData=await keyResponse.json();
+    if(!keyResponse.ok||!keyData.publicKey)throw new Error(keyData.error||'Kunci push belum disediakan di server.');
+    const permission=await Notification.requestPermission();
+    if(permission!=='granted')throw new Error('Kebenaran notifikasi tidak diberikan. Semak Settings telefon dan cuba lagi.');
+    const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
+    await navigator.serviceWorker.ready;
+    let subscription=await registration.pushManager.getSubscription();
+    if(!subscription){
+      subscription=await registration.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:urlB64ToUint8Array(keyData.publicKey)
+      });
+    }
+    const response=await fetch(FUNCTION_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-saujana-enrollment-code':code},
+      body:JSON.stringify({action:'subscribe',recipient_label:recipient,subscription:subscription.toJSON()})
+    });
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.error||'Pendaftaran gagal.');
+    say('Berjaya! Telefon ini didaftarkan untuk '+recipient+'. Hantar booking ujian selepas kedua-dua telefon selesai didaftarkan.');
+  }catch(e){say('Belum berjaya: '+(e.message||e)+'\nSemak tetapan Supabase dan cuba lagi.');}
+  finally{btn.disabled=false;btn.textContent='Aktifkan notifikasi pada telefon ini';}
+});
+</script></body></html>
