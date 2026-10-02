@@ -354,7 +354,7 @@ async function sendBooking(){
       deposit_amount:depositAmount,
       deposit_proof_path:depositProofPath,
       status:'baru',
-      source:'customer_web'
+      source:(getAgentSlug() ? 'customer_web|agent=' + getAgentSlug() : 'customer_web')
     };
 
     const {error}=await supabaseClient
