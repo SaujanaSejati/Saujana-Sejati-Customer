@@ -34,6 +34,7 @@ supabase secrets set VAPID_PUBLIC_KEY="PUBLIC_KEY_ANDA"
 supabase secrets set VAPID_PRIVATE_KEY="PRIVATE_KEY_ANDA"
 supabase secrets set VAPID_SUBJECT="mailto:EMAIL_ADMIN_ANDA"
 supabase secrets set SAUJANA_PUSH_WEBHOOK_SECRET="RAHSIA_RAWAK_PANJANG"
+supabase secrets set SAUJANA_PUSH_ENROLLMENT_CODE="KOD_PENDAFTARAN_RAHsia_PANJANG"
 ``
 Function juga memerlukan `SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY`, yang biasanya tersedia sebagai environment secrets terbina dalam Edge Functions.
 
@@ -60,16 +61,22 @@ select vault.create_secret(
 ``
 Jalankan hanya sekali bagi setiap nama secret. Jika sudah wujud, kemas kini secret melalui Vault UI, jangan cipta nama pendua.
 
-## 4. Pendaftaran dua telefon dan ujian
+## 4. Daftar dua telefon
 
-Sebelum langganan boleh dibuat, bina/aktifkan halaman pendaftaran yang:
-1. Mendaftarkan `/Saujana-Sejati-Customer/sw.js` dengan scope website.
-2. Meminta kebenaran notifikasi selepas pengguna menekan butang.
-3. Membuat subscription menggunakan VAPID public key.
-4. Menghantar subscription kepada Edge Function selepas pengesahan pentadbir.
-5. Menyimpan subscription ke `web_push_subscriptions` menggunakan service role hanya di server.
+Halaman pendaftaran telah disediakan di:
+`https://saujanasejati.github.io/Saujana-Sejati-Customer/push-register.html`
 
-**Jangan benarkan halaman awam menulis terus ke jadual langganan.** Kod pendaftaran mesti mempunyai pengesahan admin yang disahkan di server. Selepas itu daftarkan kedua-dua peranti dan hantar booking ujian.
+1. Tetapkan secret `SAUJANA_PUSH_ENROLLMENT_CODE` di Edge Function menggunakan kod rawak yang panjang.
+2. Simpan kod itu secara peribadi; jangan hantar dalam chat kumpulan atau letak dalam repo.
+3. Pastikan migration SQL sudah dijalankan dan dua secret Vault sudah disimpan.
+4. Buka halaman pendaftaran di telefon Hairi. Pada iPhone, buka menggunakan Safari, tekan Share → Add to Home Screen, buka ikon Home Screen, kemudian buka halaman pendaftaran dari situ.
+5. Pilih Hairi, masukkan kod pendaftaran, tekan Aktifkan dan benarkan notifikasi.
+6. Ulang pada telefon Amirul, pilih Amirul.
+7. Buat satu booking ujian sebenar dan sahkan kedua-dua telefon menerima notifikasi.
+
+Jika guna Android, buka melalui Chrome dan benarkan notifikasi. Bunyi masih tertakluk pada tetapan sistem telefon.
+
+**Jangan benarkan halaman awam menulis terus ke jadual langganan.** Halaman pendaftaran menghantar subscription ke Edge Function yang menyemak kod di server.
 
 ## Nota keselamatan dan tingkah laku
 
