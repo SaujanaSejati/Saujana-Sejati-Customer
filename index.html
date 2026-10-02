@@ -57,6 +57,15 @@
         </div>
 
         <div class="field full" style="margin-top:8px">
+          <div style="padding:14px;border:2px solid #d9e2ef;border-radius:12px;background:#f8fbff">
+            <div style="font-weight:900;font-size:16px;margin-bottom:6px">🧰 Tambah Item Tempahan</div>
+            <div style="font-size:13px;color:#596579;margin-bottom:10px">Item pertama menggunakan pilihan jenis, material dan ukuran di atas. Tambah item lain di sini jika mahu tempah beberapa kabinet/perabot dalam satu booking.</div>
+            <div id="extraBookingItems" style="display:grid;gap:10px"></div>
+            <button type="button" class="btn red" style="margin-top:10px" onclick="addBookingItemRow()">＋ Tambah Item</button>
+          </div>
+        </div>
+
+        <div class="field full" style="margin-top:8px">
   <div style="padding:12px;border:1px solid #e3e3e3;border-radius:10px;background:#fafafa">
     <div style="font-weight:900;margin-bottom:8px">📚 KATALOG WARNA</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -314,6 +323,11 @@ async function sendBooking(){
   const deposit=document.getElementById('bkDeposit').value;
   const depositProof=document.getElementById('bkDepositProof').files[0];
   const accessories=getSelectedAccessories();
+  const bookingItems=getBookingItems();
+  if(bookingItems.some(x=>!x.item_type||!x.material||!x.measurement)){
+    alert('Sila lengkapkan jenis, material dan ukuran untuk setiap item tempahan.');
+    return;
+  }
 
   if(!name||!phone||!type||!measurement||!date||!time||!address||!colorName||!colorHex||!colorCode){
     alert('Sila lengkapkan semua ruangan bertanda * termasuk pilihan warna dan kod katalog.');
@@ -384,6 +398,23 @@ async function sendBooking(){
       .insert([payload]);
 
     if(error) throw error;
+
+    if(bookingItems.length){
+      const childRows=bookingItems.map((item,index)=>({
+        booking_id:bookingId,
+        sort_order:index+1,
+        item_type:item.item_type,
+        material:item.material,
+        measurement:item.measurement,
+        color_name:colorCatalogName||colorName,
+        color_hex:colorHex,
+        color_code:colorCode,
+        accessories:index===0?accessories:[],
+        notes:index===0?(note||null):null
+      }));
+      const {error:itemError}=await supabaseClient.from('booking_items').insert(childRows);
+      if(itemError) throw new Error('Booking utama tersimpan tetapi item tambahan gagal disimpan: '+itemError.message);
+    }
 
     const referenceFiles=Array.from(document.getElementById('bkReferenceImages')?.files||[]);
     const referenceCaptions=Array.from(document.querySelectorAll('.reference-caption')).map(x=>x.value.trim());
@@ -458,7 +489,41 @@ document.getElementById('bkReferenceImages').addEventListener('change', function
     reader.readAsDataURL(file);
   });
 });
-  function getSelectedAccessories(){
+  let bookingItemRowCounter=0;
+function addBookingItemRow(){
+  const host=document.getElementById('extraBookingItems');if(!host)return;
+  const id='extraBookingItem'+(++bookingItemRowCounter);
+  const row=document.createElement('div');
+  row.className='extra-booking-item';
+  row.dataset.itemId=id;
+  row.style.cssText='padding:12px;border:1px solid #d9e2ef;border-radius:10px;background:#fff';
+  row.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+      <b>Item tambahan</b>
+      <button type="button" class="btn" style="background:#fee2e2;color:#b91c1c;padding:6px 10px" onclick="this.closest('.extra-booking-item').remove()">Buang</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">
+      <label>Jenis item<select class="extra-item-type" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px">
+        <option value="">Pilih jenis</option><option>Kabinet Dapur</option><option>Almari Bilik</option><option>Rak TV</option><option>Panel Dinding</option><option>Bawah Tangga</option><option>Rak Display</option>
+      </select></label>
+      <label>Material<select class="extra-item-material" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"><option>Melamine</option><option>Laminate Formica</option></select></label>
+      <label style="grid-column:1/-1">Ukuran anggaran<input class="extra-item-measurement" type="text" placeholder="Contoh: 6 kaki lebar x 7 kaki tinggi" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
+    </div>`;
+  host.appendChild(row);
+}
+function getBookingItems(){
+  const first={
+    item_type:document.getElementById('bkType')?.value||'',
+    material:document.getElementById('bkMaterial')?.value||'',
+    measurement:document.getElementById('bkMeasurement')?.value.trim()||''
+  };
+  return [first,...Array.from(document.querySelectorAll('.extra-booking-item')).map(row=>({
+    item_type:row.querySelector('.extra-item-type')?.value||'',
+    material:row.querySelector('.extra-item-material')?.value||'',
+    measurement:row.querySelector('.extra-item-measurement')?.value.trim()||''
+  }))];
+}
+function getSelectedAccessories(){
   const items = Array.from(document.querySelectorAll('.acc:checked')).map(x=>x.value);
   const other = document.getElementById('otherAccessory');
   if(other && other.value.trim() && document.querySelector('.acc[value="Aksesori lain"]:checked')){
