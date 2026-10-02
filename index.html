@@ -316,8 +316,13 @@ async function sendBooking(){
     return;
   }
 
-  // Deposit dan bukti deposit adalah pilihan; booking boleh dihantar walaupun kosong.
+  // Deposit RM0 tidak perlukan bukti. Jika deposit melebihi RM0, bukti wajib dimuat naik.
   const depositAmount=deposit.trim()!==''&&Number(deposit)>0?Number(deposit):0;
+  if(depositAmount>0&&!depositProof){
+    alert('Anda mengisi jumlah deposit RM '+depositAmount.toFixed(2)+'. Sila muat naik bukti pembayaran sebelum menghantar booking.');
+    document.getElementById('bkDepositProof').focus();
+    return;
+  }
   let depositProofPath=null;
 
   const btn=document.querySelector('.booking-wa');
@@ -406,8 +411,8 @@ async function sendBooking(){
       'Tarikh: '+date+'\n'+
       'Masa: '+time+'\n'+
       'Alamat/Lokasi: '+address+'\n'+
-      'Jumlah Deposit: RM '+Number(deposit).toFixed(2)+'\n'+
-      'Bukti Deposit: Telah dimuat naik melalui website\n'+
+      'Jumlah Deposit: RM '+depositAmount.toFixed(2)+'\n'+
+      'Bukti Deposit: '+(depositProofPath?'Telah dimuat naik melalui website':(depositAmount>0?'Belum dimuat naik':'Tidak diperlukan (deposit RM0)'))+'\n'+
       'Aksesori: '+(accessories.join(', ')||'-')+'\n'+
       'Catatan: '+(note||'-')+'\n\n'+
       'Booking saya sudah dihantar melalui website. Mohon sahkan temujanji dan penerimaan deposit. Terima kasih.';
