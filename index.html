@@ -406,9 +406,9 @@ async function sendBooking(){
         item_type:item.item_type,
         material:item.material,
         measurement:item.measurement,
-        color_name:colorCatalogName||colorName,
-        color_hex:colorHex,
-        color_code:colorCode,
+        color_name:item.color_name||(index===0?(colorCatalogName||colorName):null),
+        color_hex:item.color_hex|| (index===0?colorHex:null),
+        color_code:item.color_code|| (index===0?colorCode:null),
         accessories:index===0?accessories:[],
         notes:index===0?(note||null):null
       }));
@@ -508,6 +508,9 @@ function addBookingItemRow(){
       </select></label>
       <label>Material<select class="extra-item-material" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"><option>Melamine</option><option>Laminate Formica</option></select></label>
       <label style="grid-column:1/-1">Ukuran anggaran<input class="extra-item-measurement" type="text" placeholder="Contoh: 6 kaki lebar x 7 kaki tinggi" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
+      <label>Nama warna<input class="extra-item-color-name" type="text" placeholder="Contoh: Oak / Putih" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
+      <label>Kod warna katalog<input class="extra-item-color-code" type="text" placeholder="Contoh: E-3134" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px"></label>
+      <label>Warna pilihan (HEX)<div style="display:flex;gap:8px;align-items:center;margin-top:5px"><input class="extra-item-color-hex" type="text" maxlength="7" placeholder="#FFFFFF" style="min-width:0;flex:1;padding:10px;border:1px solid #ccc;border-radius:8px"><input class="extra-item-color-picker" type="color" value="#ffffff" title="Pilih warna" style="width:44px;height:42px;padding:2px" onchange="this.closest('.extra-booking-item').querySelector('.extra-item-color-hex').value=this.value.toUpperCase()"></div></label>
     </div>`;
   host.appendChild(row);
 }
@@ -520,7 +523,10 @@ function getBookingItems(){
   return [first,...Array.from(document.querySelectorAll('.extra-booking-item')).map(row=>({
     item_type:row.querySelector('.extra-item-type')?.value||'',
     material:row.querySelector('.extra-item-material')?.value||'',
-    measurement:row.querySelector('.extra-item-measurement')?.value.trim()||''
+    measurement:row.querySelector('.extra-item-measurement')?.value.trim()||'',
+    color_name:row.querySelector('.extra-item-color-name')?.value.trim()||'',
+    color_code:row.querySelector('.extra-item-color-code')?.value.trim()||'',
+    color_hex:row.querySelector('.extra-item-color-hex')?.value.trim()||''
   }))];
 }
 function getSelectedAccessories(){
