@@ -157,17 +157,17 @@ const MATERIALS={Melamine:{lower:150,upperStandard:240,upperCeiling:270},Formica
 function money(n){return 'RM '+Number(n||0).toLocaleString('ms-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}
 
 function getAgentSlug(){
-  // URL lama menggunakan ?agent=hairi; utamakan parameter ini dahulu.
-  const params=new URLSearchParams(window.location.search);
-  const querySlug=(params.get('agent')||'').toLowerCase().trim();
-  if(querySlug) return querySlug;
-
-  // URL kanonik GitHub Pages: /Saujana-Sejati-Customer/hairi/agent
   const parts=window.location.pathname.split('/').filter(Boolean).map(x=>decodeURIComponent(x).toLowerCase().trim());
-  const i=parts.lastIndexOf('agent');
-  if(i>0 && parts[i-1] && parts[i-1]!=='saujana-sejati-customer') return parts[i-1];
-
-  return '';
+  // PIC utama: /admin/Hairi dan /admin/Amirul
+  const adminIndex=parts.findIndex(x=>x==='admin');
+  if(adminIndex>=0 && parts[adminIndex+1]) return parts[adminIndex+1];
+  // Ejen biasa: /agent/Nama-Ejen (serta format lama /Nama-Ejen/agent)
+  const agentIndex=parts.findIndex(x=>x==='agent');
+  if(agentIndex>=0 && parts[agentIndex+1]) return parts[agentIndex+1];
+  if(agentIndex>0 && parts[agentIndex-1] && parts[agentIndex-1]!=='saujana-sejati-customer') return parts[agentIndex-1];
+  // Keserasian dengan pautan lama yang menggunakan ?agent=slug
+  const params=new URLSearchParams(window.location.search);
+  return (params.get('agent')||'').toLowerCase().trim();
 }
 
 function normalizeAgentUrl(){
