@@ -145,9 +145,14 @@ function money(n){return 'RM '+Number(n||0).toLocaleString('ms-MY',{minimumFract
 
 function getAgentSlug(){
   const parts=window.location.pathname.split('/').filter(Boolean).map(x=>decodeURIComponent(x).toLowerCase().trim());
-  const i=parts.lastIndexOf('agent');
-  if(i>0 && parts[i-1]) return parts[i-1];
-
+  // PIC utama: /admin/Hairi dan /admin/Amirul
+  const adminIndex=parts.findIndex(x=>x==='admin');
+  if(adminIndex>=0 && parts[adminIndex+1]) return parts[adminIndex+1];
+  // Ejen biasa: /agent/Nama-Ejen (serta format lama /Nama-Ejen/agent)
+  const agentIndex=parts.findIndex(x=>x==='agent');
+  if(agentIndex>=0 && parts[agentIndex+1]) return parts[agentIndex+1];
+  if(agentIndex>0 && parts[agentIndex-1] && parts[agentIndex-1]!=='saujana-sejati-customer') return parts[agentIndex-1];
+  // Keserasian dengan pautan lama yang menggunakan ?agent=slug
   const params=new URLSearchParams(window.location.search);
   return (params.get('agent')||'').toLowerCase().trim();
 }
@@ -504,15 +509,4 @@ async function loadActiveHomepageVideo(){
   showVideo(fallbackUrl,'Promo Video 01','Video promosi Saujana Sejati Ent');
 }
 </script>
-<script>
-(function(){
-  const parts=location.pathname.split('/').filter(Boolean);
-  const i=parts.findIndex(p=>p.toLowerCase()==='agent');
-  if(i>=0 && parts[i+1]){
-    const slug=decodeURIComponent(parts[i+1]).trim();
-    if(slug){
-      location.replace('/Saujana-Sejati-Customer/agent/?agent='+encodeURIComponent(slug));
-    }
-  }
-})();
-</script></body></html>
+</body></html>
