@@ -157,12 +157,17 @@ const MATERIALS={Melamine:{lower:150,upperStandard:240,upperCeiling:270},Formica
 function money(n){return 'RM '+Number(n||0).toLocaleString('ms-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}
 
 function getAgentSlug(){
+  // URL lama menggunakan ?agent=hairi; utamakan parameter ini dahulu.
+  const params=new URLSearchParams(window.location.search);
+  const querySlug=(params.get('agent')||'').toLowerCase().trim();
+  if(querySlug) return querySlug;
+
+  // URL kanonik GitHub Pages: /Saujana-Sejati-Customer/hairi/agent
   const parts=window.location.pathname.split('/').filter(Boolean).map(x=>decodeURIComponent(x).toLowerCase().trim());
   const i=parts.lastIndexOf('agent');
-  if(i>0 && parts[i-1]) return parts[i-1];
+  if(i>0 && parts[i-1] && parts[i-1]!=='saujana-sejati-customer') return parts[i-1];
 
-  const params=new URLSearchParams(window.location.search);
-  return (params.get('agent')||'').toLowerCase().trim();
+  return '';
 }
 
 function normalizeAgentUrl(){
