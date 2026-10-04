@@ -13,7 +13,7 @@ create table if not exists public.customer_reviews (
 );
 alter table public.customer_reviews enable row level security;
 revoke all on public.customer_reviews from anon, authenticated;
-grant select (id,customer_name,project_type,rating,comment,project_photo_url,created_at) on public.customer_reviews to anon,authenticated;
+grant select (id,customer_name,project_type,rating,comment,project_photo_url,created_at) on public.customer_reviews to anon;\ngrant select on public.customer_reviews to authenticated;
 grant insert (customer_name,project_type,rating,comment,project_photo_url,marketing_consent) on public.customer_reviews to anon,authenticated;
 grant select on public.customer_reviews to authenticated;
 grant update (status) on public.customer_reviews to authenticated;
