@@ -36,7 +36,9 @@ const lowSection=document.getElementById('lowSection');
 const normalizePhone=value=>{let p=String(value||'').replace(/\D/g,'');if(p.startsWith('0'))p='60'+p.slice(1);return p;};
 const verifyStatus=document.getElementById('verifyStatus');
 if(bookingId){
- document.querySelector('#feedbackForm .section h2').textContent='Maklum Balas Tempahan';
+ document.querySelector('#feedbackForm > .section h2').textContent='Bagaimana pengalaman anda dengan tempahan kabinet kami?';
+ document.getElementById('phone').required=false;
+ lowSection.hidden=true;
  document.getElementById('phone').closest('label').hidden=true;
  document.getElementById('otpChannel').closest('label').hidden=true;
  document.getElementById('sendOtpBtn').hidden=true;
@@ -65,14 +67,14 @@ document.getElementById('verifyOtpBtn').addEventListener('click',async()=>{
 document.querySelectorAll('[data-rating]').forEach(button=>button.addEventListener('click',()=>{
  rating=Number(button.dataset.rating);
  document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b===button));
- lowSection.hidden=rating>3;
+ lowSection.hidden=Boolean(bookingId)||rating>3;
 }));
 document.getElementById('feedbackForm').addEventListener('submit',async event=>{
  event.preventDefault();
  const status=document.getElementById('status'),submit=document.getElementById('submitBtn');
  const reasons=rating<=3?Array.from(document.querySelectorAll('input[name="reason"]:checked')).map(x=>x.value):[];
  if(!bookingId&&!phoneVerified){status.className='status err';status.textContent='Sahkan nombor telefon melalui OTP dahulu.';return;}
- if(rating<=3&&!reasons.length){status.className='status err';status.textContent='Pilih sekurang-kurangnya satu sebab supaya kami tahu apa yang perlu diperbaiki.';return;}
+ if(!bookingId&&rating<=3&&!reasons.length){status.className='status err';status.textContent='Pilih sekurang-kurangnya satu sebab supaya kami tahu apa yang perlu diperbaiki.';return;}
  submit.disabled=true;submit.textContent='Menghantar...';status.className='status';status.textContent='';
  try{
   const lowExplanation=rating<=3?document.getElementById('explanation').value.trim():'';
