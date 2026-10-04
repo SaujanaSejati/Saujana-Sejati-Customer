@@ -19,8 +19,8 @@
 <label class="reason"><input type="checkbox" name="reason" value="Lain-lain">Lain-lain</label>
 <textarea id="explanation" placeholder="Penjelasan lanjut (pilihan sahaja)"></textarea>
 </div>
-<div class="section"><h2>Komen atau cadangan anda</h2><p class="muted">Semua pelawat boleh tinggalkan komen, cadangan atau pengalaman menggunakan website ini. Tidak perlu buat booking dan nama tidak wajib.</p><textarea id="publicComment" placeholder="Tulis komen atau cadangan anda di sini (pilihan sahaja)"></textarea></div>
-<button id="submitBtn" class="submit" type="submit">Hantar Maklum Balas</button><div id="status" class="status" role="status"></div><p class="notice">Tiada nama atau nombor telefon diperlukan. Terima kasih kerana membantu kami memperbaiki website.</p>
+<div class="section"><h2>Pengesahan pengunjung</h2><label class="reason" style="display:block">Nama penuh<input id="fullName" required maxlength="100" autocomplete="name" placeholder="Nama anda" style="display:block;width:100%;margin-top:8px;padding:13px;border-radius:10px"></label><label class="reason" style="display:block">Nombor telefon Malaysia<input id="phone" required type="tel" autocomplete="tel" placeholder="Contoh: 0123456789" style="display:block;width:100%;margin-top:8px;padding:13px;border-radius:10px"></label><label class="reason" style="display:block">Pilih cara terima OTP<select id="otpChannel" style="display:block;width:100%;margin-top:8px;padding:13px;border-radius:10px"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option></select></label><button id="sendOtpBtn" class="submit" type="button">Hantar Kod OTP</button><div id="otpArea" hidden><label class="reason" style="display:block">Kod OTP<input id="otpCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="Kod 6 digit" style="display:block;width:100%;margin-top:8px;padding:13px;border-radius:10px"></label><button id="verifyOtpBtn" class="submit" type="button">Sahkan OTP</button></div><div id="verifyStatus" class="status" role="status"></div></div><div class="section"><h2>Komen atau cadangan anda</h2><p class="muted">Semua pelawat boleh memberi maklum balas tanpa booking. Pengesahan telefon diperlukan.</p><textarea id="publicComment" placeholder="Tulis komen atau cadangan anda di sini (pilihan sahaja)"></textarea></div>
+<button id="submitBtn" class="submit" type="submit">Hantar Maklum Balas</button><div id="status" class="status" role="status"></div><p class="notice">Nombor telefon mesti disahkan melalui OTP sebelum maklum balas dihantar.</p>
 </form></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -28,7 +28,26 @@ const SUPABASE_URL="https://wvxaiojnxwzcdrczbdup.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_F_JX1g6axQQBZUJTVRCqUA_fEc5YsA2";
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 let rating=5;
+let phoneVerified=false;
 const lowSection=document.getElementById('lowSection');
+const normalizePhone=value=>{let p=String(value||'').replace(/\D/g,'');if(p.startsWith('0'))p='60'+p.slice(1);return p;};
+const verifyStatus=document.getElementById('verifyStatus');
+document.getElementById('sendOtpBtn').addEventListener('click',async()=>{
+ const name=document.getElementById('fullName').value.trim(),phone=normalizePhone(document.getElementById('phone').value),channel=document.getElementById('otpChannel').value;
+ if(name.length<2){verifyStatus.className='status err';verifyStatus.textContent='Masukkan nama penuh.';return;}
+ if(!/^60[0-9]{8,12}$/.test(phone)){verifyStatus.className='status err';verifyStatus.textContent='Masukkan nombor telefon Malaysia yang sah.';return;}
+ const btn=document.getElementById('sendOtpBtn');btn.disabled=true;
+ try{const {error}=await supabaseClient.auth.signInWithOtp({phone:'+'+phone,options:{channel,shouldCreateUser:true}});if(error)throw error;document.getElementById('phone').value=phone;document.getElementById('otpArea').hidden=false;verifyStatus.className='status ok';verifyStatus.textContent='Permintaan OTP dibuat. Semak '+(channel==='whatsapp'?'WhatsApp':'SMS')+' anda.';}
+ catch(e){console.error(e);verifyStatus.className='status err';verifyStatus.textContent='OTP gagal dihantar. Tetapan penyedia SMS/WhatsApp mungkin belum lengkap.';}
+ finally{btn.disabled=false;btn.textContent='Hantar / Hantar Semula OTP';}
+});
+document.getElementById('verifyOtpBtn').addEventListener('click',async()=>{
+ const phone=normalizePhone(document.getElementById('phone').value),token=document.getElementById('otpCode').value.trim();
+ if(!/^\d{6}$/.test(token)){verifyStatus.className='status err';verifyStatus.textContent='Masukkan kod OTP 6 digit.';return;}
+ const btn=document.getElementById('verifyOtpBtn');btn.disabled=true;
+ try{const {data,error}=await supabaseClient.auth.verifyOtp({phone:'+'+phone,token,type:'sms'});if(error)throw error;if(!data.session||data.user?.phone_confirmed_at==null)throw new Error('Phone not confirmed');phoneVerified=true;document.getElementById('phone').value=phone;verifyStatus.className='status ok';verifyStatus.textContent='Telefon disahkan. Anda boleh hantar maklum balas.';document.getElementById('sendOtpBtn').disabled=true;document.getElementById('otpChannel').disabled=true;document.getElementById('phone').readOnly=true;btn.disabled=true;}
+ catch(e){console.error(e);verifyStatus.className='status err';verifyStatus.textContent='OTP tidak sah atau tamat tempoh. Cuba semula.';btn.disabled=false;}
+});
 document.querySelectorAll('[data-rating]').forEach(button=>button.addEventListener('click',()=>{
  rating=Number(button.dataset.rating);
  document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b===button));
@@ -38,13 +57,14 @@ document.getElementById('feedbackForm').addEventListener('submit',async event=>{
  event.preventDefault();
  const status=document.getElementById('status'),submit=document.getElementById('submitBtn');
  const reasons=rating<=3?Array.from(document.querySelectorAll('input[name="reason"]:checked')).map(x=>x.value):[];
+ if(!phoneVerified){status.className='status err';status.textContent='Sahkan nombor telefon melalui OTP dahulu.';return;}
  if(rating<=3&&!reasons.length){status.className='status err';status.textContent='Pilih sekurang-kurangnya satu sebab supaya kami tahu apa yang perlu diperbaiki.';return;}
  submit.disabled=true;submit.textContent='Menghantar...';status.className='status';status.textContent='';
  try{
   const lowExplanation=rating<=3?document.getElementById('explanation').value.trim():'';
   const publicComment=document.getElementById('publicComment').value.trim();
   const explanation=[lowExplanation,publicComment?('Komen pelawat: '+publicComment):''].filter(Boolean).join('\n\n')||null;
-  const {error}=await supabaseClient.from('website_feedback').insert([{rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation}]);
+  const full_name=document.getElementById('fullName').value.trim();const phone='+'+normalizePhone(document.getElementById('phone').value);const {error}=await supabaseClient.from('website_feedback').insert([{full_name,phone,phone_verified:true,rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation}]);
   if(error)throw error;
   status.className='status ok';status.textContent='Terima kasih! Maklum balas anda berjaya dihantar.';
   document.getElementById('feedbackForm').reset();rating=5;document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b.dataset.rating==='5'));lowSection.hidden=true;document.getElementById('explanation').value='';document.getElementById('publicComment').value='';
