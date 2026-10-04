@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111"><title>Maklum Balas Pengguna Website | Saujana Sejati Ent</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#000;color:#f7f7f7;font:16px Arial,sans-serif}.top{background:#111;padding:15px 18px;display:flex;justify-content:space-between;align-items:center}.top a{color:#111;background:#fff;text-decoration:none;padding:10px 12px;border-radius:8px;font-weight:bold}main{max-width:760px;margin:24px auto;padding:0 16px 36px}.card{border:1px solid #282828;border-radius:18px;padding:24px;background:#050505}.muted{color:#aaa;line-height:1.5}h1{font-size:clamp(26px,5vw,36px);margin:0 0 12px}h2{font-size:21px;margin:0 0 18px}.rating{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:22px 0}.rating button{border:1px solid #303030;background:#242424;color:#fff;border-radius:14px;padding:15px 2px;font-size:24px;cursor:pointer}.rating button span{display:block;font-size:15px;margin-top:8px}.rating button.selected{background:#dcece2;color:#111;border-color:#dcece2}.section{border-top:1px solid #222;padding-top:24px;margin-top:24px}.choice{display:flex;align-items:center;gap:12px;margin:14px 0;font-size:17px}.choice input{width:20px;height:20px;accent-color:#f7f7f7}.reason{display:flex;align-items:flex-start;gap:10px;margin:14px 0;line-height:1.4}.reason input{width:19px;height:19px;accent-color:#fff;flex-shrink:0;margin-top:1px}textarea{width:100%;background:#050505;color:#fff;border:1px solid #555;border-radius:12px;padding:14px;font:16px Arial;min-height:90px;resize:vertical}.submit{width:100%;border:0;border-radius:10px;background:#e50914;color:white;font-weight:bold;padding:15px;font-size:17px;margin-top:20px;cursor:pointer}.submit:disabled{opacity:.6}.notice{font-size:13px;color:#aaa;margin-top:12px}#lowSection[hidden]{display:none}.status{padding:12px;border-radius:10px;margin-top:14px;display:none}.status.ok{display:block;background:#10291b;color:#c7f5d7}.status.err{display:block;background:#351313;color:#ffdada}@media(max-width:500px){.card{padding:18px}.rating{gap:6px}.rating button{padding:12px 1px}.rating button span{font-size:13px}}
+</style></head><body>
+<header class="top"><b>SAUJANA SEJATI ENT</b><a href="./index.html">← Laman utama</a></header>
+<main><section class="card"><h1>Maklum Balas Pengguna Website</h1><p class="muted">Bantu kami menambah baik website Saujana Sejati Ent. Maklum balas anda membantu kami mengenal pasti perkara yang perlu diperbaiki.</p>
+<form id="feedbackForm">
+<div class="section" style="border-top:0;padding-top:0;margin-top:22px"><h2>Bagaimana pengalaman anda menggunakan website ini?</h2>
+<div class="rating" role="group" aria-label="Markah 1 hingga 5">
+<button type="button" data-rating="1" aria-label="Markah 1">😞<span>1</span></button><button type="button" data-rating="2" aria-label="Markah 2">🙁<span>2</span></button><button type="button" data-rating="3" aria-label="Markah 3">😐<span>3</span></button><button type="button" data-rating="4" aria-label="Markah 4">🙂<span>4</span></button><button type="button" data-rating="5" class="selected" aria-label="Markah 5">🤩<span>5</span></button>
+</div></div>
+<div id="lowSection" class="section" hidden><h2>Apa yang menyebabkan anda memberi markah rendah?</h2><p class="muted">Pilih sebab yang berkaitan.</p>
+<label class="reason"><input type="checkbox" name="reason" value="Website susah digunakan">Website susah digunakan</label>
+<label class="reason"><input type="checkbox" name="reason" value="Katalog atau gambar tidak jelas">Katalog atau gambar tidak jelas</label>
+<label class="reason"><input type="checkbox" name="reason" value="Tempahan (booking) bermasalah">Tempahan (booking) bermasalah</label>
+<label class="reason"><input type="checkbox" name="reason" value="Sebut harga (quotation) mengelirukan">Sebut harga (quotation) mengelirukan</label>
+<label class="reason"><input type="checkbox" name="reason" value="Website lambat atau tidak berfungsi">Website lambat atau tidak berfungsi</label>
+<label class="reason"><input type="checkbox" name="reason" value="Lain-lain">Lain-lain</label>
+<textarea id="explanation" placeholder="Penjelasan lanjut (pilihan sahaja)"></textarea>
+</div>
+<button id="submitBtn" class="submit" type="submit">Hantar Maklum Balas</button><div id="status" class="status" role="status"></div><p class="notice">Tiada nama atau nombor telefon diperlukan. Terima kasih kerana membantu kami memperbaiki website.</p>
+</form></section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://wvxaiojnxwzcdrczbdup.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_F_JX1g6axQQBZUJTVRCqUA_fEc5YsA2";
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let rating=5;
+const lowSection=document.getElementById('lowSection');
+document.querySelectorAll('[data-rating]').forEach(button=>button.addEventListener('click',()=>{
+ rating=Number(button.dataset.rating);
+ document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b===button));
+ lowSection.hidden=rating>3;
+}));
+document.getElementById('feedbackForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const status=document.getElementById('status'),submit=document.getElementById('submitBtn');
+ const reasons=rating<=3?Array.from(document.querySelectorAll('input[name="reason"]:checked')).map(x=>x.value):[];
+ if(rating<=3&&!reasons.length){status.className='status err';status.textContent='Pilih sekurang-kurangnya satu sebab supaya kami tahu apa yang perlu diperbaiki.';return;}
+ submit.disabled=true;submit.textContent='Menghantar...';status.className='status';status.textContent='';
+ try{
+  const {error}=await supabaseClient.from('website_feedback').insert([{rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation:rating<=3?(document.getElementById('explanation').value.trim()||null):null}]);
+  if(error)throw error;
+  status.className='status ok';status.textContent='Terima kasih! Maklum balas anda berjaya dihantar.';
+  document.getElementById('feedbackForm').reset();rating=5;document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b.dataset.rating==='5'));lowSection.hidden=true;document.getElementById('explanation').value='';
+ }catch(error){console.error(error);status.className='status err';status.textContent='Maaf, maklum balas belum berjaya dihantar. Sila cuba sekali lagi.';}
+ finally{submit.disabled=false;submit.textContent='Hantar Maklum Balas';}
+});
+</script></body></html>
