@@ -19,6 +19,7 @@
 <label class="reason"><input type="checkbox" name="reason" value="Lain-lain">Lain-lain</label>
 <textarea id="explanation" placeholder="Penjelasan lanjut (pilihan sahaja)"></textarea>
 </div>
+<div class="section"><h2>Komen atau cadangan anda</h2><p class="muted">Semua pelawat boleh tinggalkan komen, cadangan atau pengalaman menggunakan website ini. Tidak perlu buat booking dan nama tidak wajib.</p><textarea id="publicComment" placeholder="Tulis komen atau cadangan anda di sini (pilihan sahaja)"></textarea></div>
 <button id="submitBtn" class="submit" type="submit">Hantar Maklum Balas</button><div id="status" class="status" role="status"></div><p class="notice">Tiada nama atau nombor telefon diperlukan. Terima kasih kerana membantu kami memperbaiki website.</p>
 </form></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -40,10 +41,13 @@ document.getElementById('feedbackForm').addEventListener('submit',async event=>{
  if(rating<=3&&!reasons.length){status.className='status err';status.textContent='Pilih sekurang-kurangnya satu sebab supaya kami tahu apa yang perlu diperbaiki.';return;}
  submit.disabled=true;submit.textContent='Menghantar...';status.className='status';status.textContent='';
  try{
-  const {error}=await supabaseClient.from('website_feedback').insert([{rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation:rating<=3?(document.getElementById('explanation').value.trim()||null):null}]);
+  const lowExplanation=rating<=3?document.getElementById('explanation').value.trim():'';
+  const publicComment=document.getElementById('publicComment').value.trim();
+  const explanation=[lowExplanation,publicComment?('Komen pelawat: '+publicComment):''].filter(Boolean).join('\n\n')||null;
+  const {error}=await supabaseClient.from('website_feedback').insert([{rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation}]);
   if(error)throw error;
   status.className='status ok';status.textContent='Terima kasih! Maklum balas anda berjaya dihantar.';
-  document.getElementById('feedbackForm').reset();rating=5;document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b.dataset.rating==='5'));lowSection.hidden=true;document.getElementById('explanation').value='';
+  document.getElementById('feedbackForm').reset();rating=5;document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b.dataset.rating==='5'));lowSection.hidden=true;document.getElementById('explanation').value='';document.getElementById('publicComment').value='';
  }catch(error){console.error(error);status.className='status err';status.textContent='Maaf, maklum balas belum berjaya dihantar. Sila cuba sekali lagi.';}
  finally{submit.disabled=false;submit.textContent='Hantar Maklum Balas';}
 });
