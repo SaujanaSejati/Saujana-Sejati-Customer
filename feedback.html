@@ -19,7 +19,7 @@
 <label class="reason"><input type="checkbox" name="reason" value="Lain-lain">Lain-lain</label>
 <textarea id="explanation" placeholder="Penjelasan lanjut (pilihan sahaja)"></textarea>
 </div>
-<div class="section"><h2>Maklumat pengunjung</h2><p class="muted">Nama diperlukan. Nombor telefon pilihan sahaja; tiada OTP diperlukan.</p><label class="reason" style="display:block">Nama penuh<input id="fullName" required maxlength="100" autocomplete="name" placeholder="Nama anda" style="display:block;width:100%;margin-top:8px;padding:13px;border-radius:10px"></label><label class="reason" style="display:block">Nombor telefon (pilihan)<input id="phone" type="tel" autocomplete="tel" placeholder="Contoh: 0123456789" style="display:block;width:100%;margin-top:8px;padding:13px;border-radius:10px"></label></div><div class="section"><h2>Komen atau cadangan anda</h2><p class="muted">Semua pelawat boleh memberi maklum balas tanpa booking. Pengesahan telefon diperlukan.</p><textarea id="publicComment" placeholder="Tulis komen atau cadangan anda di sini (pilihan sahaja)"></textarea></div>
+<div class="section"><h2>Maklumat pengunjung</h2><p class="muted">Nama diperlukan. Nombor telefon pilihan sahaja; tiada OTP diperlukan.</p><label class="reason" style="display:block">Nama penuh<input id="fullName" required maxlength="100" autocomplete="name" placeholder="Nama anda" style="display:block;width:100%;margin-top:8px;padding:13px;border-radius:10px"></label><label class="reason" style="display:block">Nombor telefon (pilihan)<input id="phone" type="tel" autocomplete="tel" placeholder="Contoh: 0123456789" style="display:block;width:100%;margin-top:8px;padding:13px;border-radius:10px"></label></div><div id="projectPhotoSection" class="section" hidden><h2>Gambar kabinet yang telah siap</h2><p class="muted">Muat naik gambar kabinet siap untuk dikongsi bersama rating anda. Format JPG, PNG atau WebP, maksimum 5 MB.</p><input id="projectPhoto" type="file" accept="image/jpeg,image/png,image/webp" style="display:block;width:100%;padding:12px;background:#111;color:#fff;border:1px solid #555;border-radius:10px"><p id="photoHint" class="notice">Gambar pilihan sahaja.</p></div><div class="section"><h2>Komen atau cadangan anda</h2><p class="muted">Semua pelawat boleh memberi maklum balas tanpa booking.</p><textarea id="publicComment" placeholder="Tulis komen atau cadangan anda di sini (pilihan sahaja)"></textarea></div>
 <button id="submitBtn" class="submit" type="submit">Hantar Maklum Balas</button><div id="status" class="status" role="status"></div><p class="notice">Maklum balas anda akan disimpan untuk semakan admin. Jangan masukkan maklumat sulit.</p>
 </form></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -34,6 +34,7 @@ let rating=5;
 const lowSection=document.getElementById('lowSection');
 const normalizePhone=value=>{let p=String(value||'').replace(/\D/g,'');if(p.startsWith('0'))p='60'+p.slice(1);return p;};
 if(bookingId){
+ document.getElementById('projectPhotoSection').hidden=false;
  document.querySelector('#feedbackForm > .section h2').textContent='Bagaimana pengalaman anda dengan tempahan kabinet kami?';
  document.getElementById('phone').required=false;
  lowSection.hidden=true;
@@ -59,7 +60,19 @@ document.getElementById('feedbackForm').addEventListener('submit',async event=>{
   const explanation=[lowExplanation,publicComment?('Komen pelawat: '+publicComment):''].filter(Boolean).join('\n\n')||null;
   const full_name=document.getElementById('fullName').value.trim();
   if(bookingId){
-   const {error}=await supabaseClient.from('customer_reviews').insert([{booking_id:bookingId,customer_name:full_name,project_type:projectType,rating,comment:explanation||'Pelanggan memberikan rating tanpa komen tambahan.',marketing_consent:false,status:'pending'}]);
+   let projectPhotoPath=null;
+   const photoInput=document.getElementById('projectPhoto');
+   const photo=photoInput.files&&photoInput.files[0];
+   if(photo){
+    const allowedTypes=['image/jpeg','image/png','image/webp'];
+    if(!allowedTypes.includes(photo.type))throw new Error('Pilih gambar JPG, PNG atau WebP sahaja.');
+    if(photo.size>5*1024*1024)throw new Error('Saiz gambar mesti 5 MB atau kurang.');
+    const ext=photo.type==='image/png'?'png':(photo.type==='image/webp'?'webp':'jpg');
+    projectPhotoPath='booking/'+bookingId+'/'+crypto.randomUUID()+'.'+ext;
+    const {error:uploadError}=await supabaseClient.storage.from('customer-reference-images').upload(projectPhotoPath,photo,{contentType:photo.type,upsert:false});
+    if(uploadError)throw uploadError;
+   }
+   const {error}=await supabaseClient.from('customer_reviews').insert([{booking_id:bookingId,customer_name:full_name,project_type:projectType,rating,comment:explanation||'Pelanggan memberikan rating tanpa komen tambahan.',project_photo_url:projectPhotoPath,marketing_consent:false,status:'pending'}]);
    if(error)throw error;
   }else{
    const rawPhone=normalizePhone(document.getElementById('phone').value);
@@ -68,7 +81,7 @@ document.getElementById('feedbackForm').addEventListener('submit',async event=>{
    if(error)throw error;
   }
   status.className='status ok';status.textContent='Terima kasih! Maklum balas anda berjaya dihantar.';
-  document.getElementById('feedbackForm').reset();rating=5;document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b.dataset.rating==='5'));lowSection.hidden=true;document.getElementById('explanation').value='';document.getElementById('publicComment').value='';
+  document.getElementById('feedbackForm').reset();rating=5;document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b.dataset.rating==='5'));lowSection.hidden=true;document.getElementById('explanation').value='';document.getElementById('publicComment').value='';const photoInput=document.getElementById('projectPhoto');if(photoInput)photoInput.value='';
  }catch(error){console.error(error);status.className='status err';status.textContent='Maaf, maklum balas belum berjaya dihantar. Sila cuba sekali lagi.';}
  finally{submit.disabled=false;submit.textContent='Hantar Maklum Balas';}
 });
