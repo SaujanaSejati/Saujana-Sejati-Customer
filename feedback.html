@@ -27,11 +27,25 @@
 const SUPABASE_URL="https://wvxaiojnxwzcdrczbdup.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_F_JX1g6axQQBZUJTVRCqUA_fEc5YsA2";
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const queryParams=new URLSearchParams(window.location.search);
+const bookingId=queryParams.get('booking_id');
+const projectType=(queryParams.get('project_type')||'Kabinet').slice(0,120);
 let rating=5;
 let phoneVerified=false;
 const lowSection=document.getElementById('lowSection');
 const normalizePhone=value=>{let p=String(value||'').replace(/\D/g,'');if(p.startsWith('0'))p='60'+p.slice(1);return p;};
 const verifyStatus=document.getElementById('verifyStatus');
+if(bookingId){
+ document.querySelector('#feedbackForm .section h2').textContent='Maklum Balas Tempahan';
+ document.getElementById('phone').closest('label').hidden=true;
+ document.getElementById('otpChannel').closest('label').hidden=true;
+ document.getElementById('sendOtpBtn').hidden=true;
+ document.getElementById('otpArea').hidden=true;
+ phoneVerified=true;
+ const help=document.querySelector('#feedbackForm .section p.muted');
+ if(help)help.textContent='Rating dan komen anda akan dipautkan kepada tempahan ini.';
+ document.querySelector('.notice').textContent='Terima kasih kerana berkongsi maklum balas tentang tempahan anda.';
+}
 document.getElementById('sendOtpBtn').addEventListener('click',async()=>{
  const name=document.getElementById('fullName').value.trim(),phone=normalizePhone(document.getElementById('phone').value),channel=document.getElementById('otpChannel').value;
  if(name.length<2){verifyStatus.className='status err';verifyStatus.textContent='Masukkan nama penuh.';return;}
@@ -57,14 +71,22 @@ document.getElementById('feedbackForm').addEventListener('submit',async event=>{
  event.preventDefault();
  const status=document.getElementById('status'),submit=document.getElementById('submitBtn');
  const reasons=rating<=3?Array.from(document.querySelectorAll('input[name="reason"]:checked')).map(x=>x.value):[];
- if(!phoneVerified){status.className='status err';status.textContent='Sahkan nombor telefon melalui OTP dahulu.';return;}
+ if(!bookingId&&!phoneVerified){status.className='status err';status.textContent='Sahkan nombor telefon melalui OTP dahulu.';return;}
  if(rating<=3&&!reasons.length){status.className='status err';status.textContent='Pilih sekurang-kurangnya satu sebab supaya kami tahu apa yang perlu diperbaiki.';return;}
  submit.disabled=true;submit.textContent='Menghantar...';status.className='status';status.textContent='';
  try{
   const lowExplanation=rating<=3?document.getElementById('explanation').value.trim():'';
   const publicComment=document.getElementById('publicComment').value.trim();
   const explanation=[lowExplanation,publicComment?('Komen pelawat: '+publicComment):''].filter(Boolean).join('\n\n')||null;
-  const full_name=document.getElementById('fullName').value.trim();const phone='+'+normalizePhone(document.getElementById('phone').value);const {error}=await supabaseClient.from('website_feedback').insert([{full_name,phone,phone_verified:true,rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation}]);
+  const full_name=document.getElementById('fullName').value.trim();
+  if(bookingId){
+   const {error}=await supabaseClient.from('customer_reviews').insert([{booking_id:bookingId,customer_name:full_name,project_type:projectType,rating,comment:explanation||'Pelanggan memberikan rating tanpa komen tambahan.',marketing_consent:false,status:'pending'}]);
+   if(error)throw error;
+  }else{
+   const phone='+'+normalizePhone(document.getElementById('phone').value);
+   const {error}=await supabaseClient.from('website_feedback').insert([{full_name,phone,phone_verified:true,rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation}]);
+   if(error)throw error;
+  }
   if(error)throw error;
   status.className='status ok';status.textContent='Terima kasih! Maklum balas anda berjaya dihantar.';
   document.getElementById('feedbackForm').reset();rating=5;document.querySelectorAll('[data-rating]').forEach(b=>b.classList.toggle('selected',b.dataset.rating==='5'));lowSection.hidden=true;document.getElementById('explanation').value='';document.getElementById('publicComment').value='';
