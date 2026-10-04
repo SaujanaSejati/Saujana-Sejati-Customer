@@ -33,7 +33,6 @@ const projectType=(queryParams.get('project_type')||'Kabinet').slice(0,120);
 let rating=5;
 const lowSection=document.getElementById('lowSection');
 const normalizePhone=value=>{let p=String(value||'').replace(/\D/g,'');if(p.startsWith('0'))p='60'+p.slice(1);return p;};
-const verifyStatus=document.getElementById('verifyStatus');
 if(bookingId){
  document.querySelector('#feedbackForm > .section h2').textContent='Bagaimana pengalaman anda dengan tempahan kabinet kami?';
  document.getElementById('phone').required=false;
