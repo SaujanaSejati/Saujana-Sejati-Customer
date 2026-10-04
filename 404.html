@@ -148,6 +148,8 @@ function getAgentSlug(){
   // PIC utama: /admin/Hairi dan /admin/Amirul
   const adminIndex=parts.findIndex(x=>x==='admin');
   if(adminIndex>=0 && parts[adminIndex+1]) return parts[adminIndex+1];
+  // PIC utama: /hairi/admin dan /amirul/admin
+  if(adminIndex>0 && parts[adminIndex-1] && parts[adminIndex-1]!=='saujana-sejati-customer') return parts[adminIndex-1];
   // Ejen biasa: /agent/Nama-Ejen (serta format lama /Nama-Ejen/agent)
   const agentIndex=parts.findIndex(x=>x==='agent');
   if(agentIndex>=0 && parts[agentIndex+1]) return parts[agentIndex+1];
