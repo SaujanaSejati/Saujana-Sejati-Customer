@@ -99,13 +99,26 @@
     <div style="font-size:18px;font-weight:900;color:#e50914;margin-bottom:8px">
       💳 PEMBAYARAN DEPOSIT
     </div>
-    <div style="display:grid;gap:5px;font-size:15px">
-      <div><b>Bank:</b> CIMB Bank</div>
-      <div><b>Nama Akaun:</b> Saujana Sejati Ent</div>
-      <div><b>No. Akaun:</b> <span style="font-size:20px;font-weight:1000;letter-spacing:1px">8603991144</span></div>
+    <div style="color:#68707a;font-size:13px;margin-bottom:10px">
+      Pilih kaedah bayaran. Maklumat akaun hanya dipaparkan apabila anda menekannya.
     </div>
-    <div style="margin-top:9px;color:#68707a;font-size:12px">
-      Sila pastikan nama akaun dan nombor akaun adalah betul sebelum membuat pembayaran deposit.
+    <button type="button" id="showBankDetailsBtn"
+      style="width:100%;border:0;border-radius:10px;padding:12px 14px;background:#e50914;color:#fff;font-weight:900;font-size:15px;cursor:pointer">
+      🏦 Lihat Maklumat Bank
+    </button>
+    <div id="bankDetailsPanel" style="display:none;margin-top:12px;border:1px solid #f0b8b8;border-radius:10px;background:#fff;padding:12px">
+      <div style="display:grid;gap:6px;font-size:15px">
+        <div><b>Bank:</b> CIMB Bank</div>
+        <div><b>Nama Akaun:</b> Saujana Sejati Ent</div>
+        <div><b>No. Akaun:</b> <span style="font-size:20px;font-weight:1000;letter-spacing:1px">8603991144</span></div>
+      </div>
+      <div style="margin-top:9px;color:#68707a;font-size:12px">
+        ⚠️ Pastikan nama penerima ialah <b>Saujana Sejati Ent</b> sebelum membuat pembayaran.
+      </div>
+      <button type="button" id="hideBankDetailsBtn"
+        style="margin-top:10px;width:100%;border:1px solid #ddd;border-radius:8px;padding:9px;background:#fff;color:#333;font-weight:700;cursor:pointer">
+        Sembunyikan
+      </button>
     </div>
   </div>
 </div>
@@ -609,4 +622,23 @@ async function loadActiveHomepageVideo(){
   const fallbackUrl='Promo%20Video%2001.MP4';
   showVideo(fallbackUrl,'Promo Video 01','Video promosi Saujana Sejati Ent');
 }
-</script></body></html>
+</script><script>
+(function(){
+  const show=document.getElementById('showBankDetailsBtn');
+  const hide=document.getElementById('hideBankDetailsBtn');
+  const panel=document.getElementById('bankDetailsPanel');
+  if(show && panel){
+    show.addEventListener('click',function(){
+      panel.style.display='block';
+      show.style.display='none';
+    });
+  }
+  if(hide && panel && show){
+    hide.addEventListener('click',function(){
+      panel.style.display='none';
+      show.style.display='block';
+    });
+  }
+})();
+</script>
+</body></html>
