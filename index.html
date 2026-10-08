@@ -169,7 +169,7 @@ const CATALOG=[['Kabinet Dapur','kabinet-dapur-01.jpg'],['Kabinet Dapur','kabine
 const MATERIALS={Melamine:{lower:150,upperStandard:240,upperCeiling:270},Formica:{lower:190,upperStandard:330,upperCeiling:370}};
 function money(n){return 'RM '+Number(n||0).toLocaleString('ms-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}
 
-function openAgentProfile(){show('profile');loadAgentProfileFrame();}
+function openAgentProfile(){show('profile');loadAgentProfileFrame();setTimeout(()=>playProfileMusic(),40);}
 function getAgentSlug(){
   const parts=window.location.pathname.split('/').filter(Boolean).map(x=>decodeURIComponent(x).toLowerCase().trim());
   // PIC utama: /admin/Hairi dan /admin/Amirul
@@ -691,7 +691,21 @@ loadPublicWebsiteFeedback();
 .profile-help-item{padding:13px;border:1px solid #ddd;border-radius:10px;font-weight:900}
 .profile-trust{margin-top:20px;background:#101923;color:#fff;border-radius:14px;padding:18px;font-size:17px;line-height:1.55}
 @media(max-width:750px){.profile-hero{min-height:460px}.profile-grid{grid-template-columns:1fr}.profile-body{padding:18px}.profile-help-grid{grid-template-columns:1fr 1fr}}
+<style id="profile-music-css">
+.profile-music-control{margin:0 24px 18px;padding:14px;border:1px solid #ddd;border-radius:14px;background:#fafafa;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.profile-music-left{display:flex;align-items:center;gap:10px;font-weight:900}.profile-music-left small{display:block;color:#68707b;font-weight:600;margin-top:3px}
+.profile-music-btn{border:0;border-radius:10px;background:#e50914;color:#fff;padding:10px 14px;font-weight:900;cursor:pointer}
+.profile-music-btn.off{background:#555}.profile-music-volume{width:120px;accent-color:#e50914}
 </style>
+</style>
+<div class="profile-music-control" id="profileMusicControl" style="display:none">
+  <div class="profile-music-left"><span style="font-size:25px">🎵</span><div><span id="profileMusicTitle">Muzik Profil</span><small id="profileMusicStatus">Tekan untuk mainkan</small></div></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button id="profileMusicBtn" class="profile-music-btn" type="button" onclick="toggleProfileMusic()">▶️ Mainkan</button>
+    <input id="profileMusicVolume" class="profile-music-volume" type="range" min="0" max="100" value="25" aria-label="Volume muzik">
+  </div>
+</div>
+<audio id="profileMusicAudio" preload="auto" loop playsinline></audio>
 <div class="profile-sheet">
   <div class="profile-hero">
     <img src="https://saujanasejati.github.io/Saujana-Sejati-Customer/Hairi.JPG?v=1" alt="Hairi">
@@ -735,5 +749,42 @@ loadPublicWebsiteFeedback();
     <div class="profile-trust">“Bagi saya, setiap tempahan bukan sekadar nombor. Ia bermula dengan kepercayaan. Dan kepercayaan itu yang saya cuba jaga.”<br><b>— Hairi</b></div>
   </div>
 </div>
-</section>
+<script id="profile-music-js">
+let profileMusicReady=false,profileMusicActive=false,profileMusicUrl='';
+async function loadProfileMusic(){
+  const audio=document.getElementById('profileMusicAudio'), box=document.getElementById('profileMusicControl');
+  if(!audio||!box)return;
+  try{
+    const {data,error}=await supabaseClient.from('profile_music_settings').select('title,storage_path,is_active,volume').eq('is_active',true).order('updated_at',{ascending:false}).limit(1).maybeSingle();
+    if(error)throw error;
+    if(!data?.storage_path){box.style.display='none';return;}
+    profileMusicUrl=supabaseClient.storage.from('profile-music').getPublicUrl(data.storage_path).data.publicUrl;
+    audio.src=profileMusicUrl;
+    audio.volume=Math.max(0,Math.min(100,Number(data.volume??25)))/100;
+    document.getElementById('profileMusicTitle').textContent=data.title||'Muzik Profil';
+    document.getElementById('profileMusicVolume').value=Number(data.volume??25);
+    box.style.display='flex';
+    profileMusicReady=true;
+  }catch(e){console.error('Profile music:',e);}
+}
+function setProfileMusicVolume(v){
+  const audio=document.getElementById('profileMusicAudio'); if(audio)audio.volume=Math.max(0,Math.min(100,Number(v)))/100;
+}
+async function playProfileMusic(){
+  const audio=document.getElementById('profileMusicAudio'),btn=document.getElementById('profileMusicBtn'),status=document.getElementById('profileMusicStatus');
+  if(!audio||!profileMusicReady)return;
+  try{await audio.play();profileMusicActive=true;if(btn){btn.textContent='⏸️ Henti';btn.classList.remove('off')}if(status)status.textContent='Sedang dimainkan';}
+  catch(e){if(status)status.textContent='Tekan “Mainkan” untuk bunyi';}
+}
+function toggleProfileMusic(){
+  const audio=document.getElementById('profileMusicAudio'),btn=document.getElementById('profileMusicBtn'),status=document.getElementById('profileMusicStatus');
+  if(!audio)return;
+  if(audio.paused){playProfileMusic();}else{audio.pause();profileMusicActive=false;if(btn){btn.textContent='▶️ Mainkan';btn.classList.add('off')}if(status)status.textContent='Dijeda';}
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const vol=document.getElementById('profileMusicVolume');
+  if(vol)vol.addEventListener('input',e=>setProfileMusicVolume(e.target.value));
+  loadProfileMusic();
+});
+</script></section>
 </body></html>
