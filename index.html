@@ -267,9 +267,10 @@ async function renderCatalog(cat){
     console.error('Gagal memuat katalog admin:',err);
     customerCatalogItems=[];
   }
-  // Ikut katalog Admin: gabungkan rekod database dengan katalog asal yang belum ada rekod legacy.
-  const legacyIds=new Set(customerCatalogItems.map(x=>x.legacy_static_id).filter(Boolean));
-  const all=[...customerCatalogItems,...customerStaticCatalogRows().filter(x=>!legacyIds.has(x.id))];
+  // Katalog Customer ikut sepenuhnya rekod aktif dari Admin/Supabase.
+  // Jangan gabungkan katalog lama (legacy static), supaya item yang dipadam dari Admin
+  // tidak muncul semula di Customer.
+  const all=customerCatalogItems;
   let items=all.filter(x=>x.active!==false && x.name && (x.image_url||x.image_path))
     .map(x=>({name:x.name,category:x.category||'Lain-lain',url:catalogImageUrl(x),image_url:x.image_url||'',image_path:x.image_path||'',id:x.id,legacy_static_id:x.legacy_static_id}));
   if(cat!=='Semua')items=items.filter(x=>x.category===cat||x.name===cat);
