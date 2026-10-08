@@ -169,7 +169,7 @@ const CATALOG=[['Kabinet Dapur','kabinet-dapur-01.jpg'],['Kabinet Dapur','kabine
 const MATERIALS={Melamine:{lower:150,upperStandard:240,upperCeiling:270},Formica:{lower:190,upperStandard:330,upperCeiling:370}};
 function money(n){return 'RM '+Number(n||0).toLocaleString('ms-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}
 
-function openAgentProfile(){const slug=(typeof getAgentSlug==='function'&&getAgentSlug())||'hairi';const profileDir={hairi:'Hairi',amirul:'Amirul'}[slug]||slug;window.top.location.href='https://saujanasejati.github.io/Saujana-Sejati-Customer/admin/'+encodeURIComponent(profileDir)+'/profil.html?v=7';}
+function openAgentProfile(){show('profile');loadAgentProfileFrame();}
 function getAgentSlug(){
   const parts=window.location.pathname.split('/').filter(Boolean).map(x=>decodeURIComponent(x).toLowerCase().trim());
   // PIC utama: /admin/Hairi dan /admin/Amirul
@@ -230,7 +230,7 @@ async function wa(t){
 
   window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(t),'_blank');
 }
-function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));const n={home:'n1',catalog:'n2',estimate:'n3',booking:'n4'}[id];if(n)document.getElementById(n).classList.add('active');window.scrollTo(0,0);if(id==='catalog')renderCatalog('Pilih kategori');if(id==='estimate')updateForm()}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));const n={home:'n1',profile:'n6',catalog:'n2',estimate:'n3',booking:'n4'}[id];if(n)document.getElementById(n).classList.add('active');window.scrollTo(0,0);if(id==='catalog')renderCatalog('Pilih kategori');if(id==='estimate')updateForm()}
 function openCatalog(cat){show('catalog');renderCatalog(cat)}
 let customerCatalogItems=[];
 function catalogImageUrl(item){
@@ -315,6 +315,7 @@ function updateForm(){const t=document.getElementById('type').value,m=document.g
 function calcEstimate(){const t=document.getElementById('type').value,m=document.getElementById('material').value||'Melamine';let r=null,a=0;if(t==='lower'){r=MATERIALS[m].lower;a=+document.getElementById('l')?.value||0;}else if(t==='upper'){r=document.getElementById('upperHeight')?.value==='ceiling'?MATERIALS[m].upperCeiling:MATERIALS[m].upperStandard;a=+document.getElementById('l')?.value||0;}else{document.getElementById('estimatePrice').textContent='Harga akan diberikan selepas ukuran';return;}document.getElementById('estimatePrice').textContent=money(a*r)}
 function waEstimate(){const t=document.getElementById('type').value,m=document.getElementById('material').value,price=document.getElementById('estimatePrice').textContent;const labels={lower:'Kabinet Dapur Bawah',upper:'Kabinet Dapur Atas',tv:'Kabinet TV',ward:'Almari Bilik'};const u=(t==='lower')?((document.getElementById('l')?.value||0)+' kaki selari'):((t==='upper')?((document.getElementById('l')?.value||0)+' kaki selari, '+(document.getElementById('upperHeight')?.value==='ceiling'?'sampai siling':'standard')):((document.getElementById('w')?.value||0)+' x '+(document.getElementById('h')?.value||0)+' kaki'));wa('Salam Saujana Sejati Ent, saya nak semak anggaran.\nJenis: '+labels[t]+'\nMaterial: '+m+'\nUkuran: '+u+'\nAnggaran: '+price+'\nAksesori: '+(getSelectedAccessories().join(', ')||'Tiada')+'\nSaya ingin dapatkan maklumat lanjut.')}
 updateForm();renderCatalog('Pilih kategori');loadActiveHomepageVideo();loadPublicWebsiteFeedback();
+function loadAgentProfileFrame(){const frame=document.getElementById('agentProfileFrame');if(!frame)return;const slug=(typeof getAgentSlug==='function'&&getAgentSlug())||'hairi';const dir={hairi:'Hairi',amirul:'Amirul'}[slug]||slug;frame.src='https://saujanasejati.github.io/Saujana-Sejati-Customer/admin/'+encodeURIComponent(dir)+'/profil.html?v=8';}
 
 function selectCabinetColor(btn,name,hex){
   document.querySelectorAll('.color-choice').forEach(x=>x.classList.remove('selected'));
@@ -662,4 +663,5 @@ async function loadPublicWebsiteFeedback(){
   }).join('')+'</div>'+(rows.length>=6?'<div class="feedback-public-more">Paparan terkini · Maklum balas lain akan dipaparkan secara berkala.</div>':'');
  }catch(e){console.error('Public feedback:',e);host.innerHTML='<div class="feedback-public-empty">Maklum balas sedang dikemas kini.</div>';}
 }
-</script></body></html>
+</script><section id="profile" class="screen"><div style="width:100%;height:calc(100vh - 76px);min-height:700px;background:#fff"><iframe id="agentProfileFrame" title="Profil Perunding" style="width:100%;height:100%;border:0;display:block" loading="eager"></iframe></div></section>
+</body></html>
