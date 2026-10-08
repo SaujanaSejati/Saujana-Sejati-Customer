@@ -647,7 +647,7 @@ async function loadActiveHomepageVideo(){
 async function loadPublicWebsiteFeedback(){
  const host=document.getElementById('publicFeedbackList'); if(!host)return;
  try{
-  const {data,error}=await supabaseClient.from('website_feedback_public').select('id,full_name,rating,ease_of_use,reasons,explanation,created_at,admin_reply,admin_replied_at,admin_replied_by').order('created_at',{ascending:false}).limit(6);
+  const {data,error}=await supabaseClient.rpc('get_public_website_feedback');
   if(error)throw error;
   const rows=data||[];
   if(!rows.length){host.innerHTML='<div class="feedback-public-empty">Belum ada maklum balas yang dipaparkan.</div>';return;}
@@ -661,7 +661,7 @@ async function loadPublicWebsiteFeedback(){
    const reply=esc(r.admin_reply||'');
    return '<article class="feedback-public-card"><div class="feedback-public-stars">'+stars+'</div><div class="feedback-public-name">'+name+'</div><div class="feedback-public-date">'+date+'</div><div class="feedback-public-comment">'+comment.replace(/\n/g,'<br>')+'</div><div class="feedback-public-reply"><b>↩️ Balasan Saujana Sejati Ent</b><p>'+reply.replace(/\n/g,'<br>')+'</p></div></article>';
   }).join('')+'</div>'+(rows.length>=6?'<div class="feedback-public-more">Paparan terkini · Maklum balas lain akan dipaparkan secara berkala.</div>':'');
- }catch(e){console.error('Public feedback:',e);host.innerHTML='<div class="feedback-public-empty">Maklum balas sedang dikemas kini.</div>';}
+ }catch(e){console.error('Public feedback:',e);host.innerHTML='<div class="feedback-public-empty">Maklum balas sedang dikemas kini.</div>'+(e?.message?'<div style="font-size:11px;color:#999;text-align:center;margin-top:6px">'+String(e.message).replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]))+'</div>':'');}
 }
 </script><section id="profile" class="screen">
 <style>
