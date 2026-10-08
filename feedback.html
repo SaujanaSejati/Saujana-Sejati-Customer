@@ -81,7 +81,7 @@ document.getElementById('feedbackForm').addEventListener('submit',async event=>{
   }else{
    const rawPhone=normalizePhone(document.getElementById('phone').value);
    const phone=rawPhone?('+'+rawPhone):null;
-   const {error}=await supabaseClient.from('website_feedback').insert([{full_name,phone,phone_verified:false,rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation}]);
+   const agentSlug=(new URLSearchParams(window.location.search).get('agent')||'').toLowerCase().trim()||null; const {error}=await supabaseClient.from('website_feedback').insert([{full_name,phone,phone_verified:false,rating,ease_of_use:rating>=4?'easy':(rating===3?'needs_improvement':'confusing'),reasons,explanation,agent_slug:agentSlug}]);
    if(error)throw error;
   }
   status.className='status ok';status.textContent='Terima kasih! Maklum balas anda berjaya dihantar.';
