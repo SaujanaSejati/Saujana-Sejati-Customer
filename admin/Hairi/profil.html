@@ -22,8 +22,10 @@ button,a{font:inherit}.app{min-height:100vh;display:flex}
 .grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:28px}.eyebrow{color:var(--red);font-weight:900;font-size:14px;letter-spacing:.5px}.name{font-size:39px;line-height:1.02;margin:8px 0 8px}.badge{display:inline-block;background:var(--red);color:#fff;padding:8px 13px;border-radius:8px;font-weight:900}.story{font-size:16px;line-height:1.7;color:#26313b;margin-top:22px}.story p{margin:0 0 17px}.timeline{position:relative;padding-left:48px}.timeline:before{content:"";position:absolute;left:15px;top:14px;bottom:14px;width:2px;background:#e7e9ed}.point{position:relative;margin-bottom:20px}.dot{position:absolute;left:-48px;top:0;width:32px;height:32px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:900;box-shadow:0 0 0 5px #fff}.point b{display:block;margin-bottom:4px}.quote{margin-top:24px;padding:22px 24px;background:#fff0f0;border-left:5px solid var(--red);border-radius:10px;font-size:19px;line-height:1.5;font-weight:900}.quote small{display:block;margin-top:10px;font-size:14px;font-weight:700}
 .info{display:grid;gap:11px}.info-card{padding:17px;border-radius:12px;background:#f5f6f8;display:flex;align-items:center;gap:13px}.info-card:nth-child(1),.info-card:nth-child(3){background:#fff0f0}.info-icon{font-size:26px;width:34px;text-align:center}.info-card span{display:block;color:#68727d;font-size:13px}.info-card b{font-size:17px}.help-title{font-size:21px;margin:25px 0 12px}.helps{display:grid;grid-template-columns:1fr 1fr;gap:10px}.help{border:1px solid #e5e8ec;border-radius:11px;padding:17px 10px;text-align:center;font-weight:800;background:#fff}.help .big{font-size:26px;display:block;margin-bottom:7px}.note{margin-top:22px;padding:18px;border-radius:12px;background:#101923;color:#fff;line-height:1.55;font-weight:700}.note b{color:#ff4a52}
 .footer{padding:24px;text-align:center;color:#7b858f;font-size:13px}
-@media(max-width:850px){.side{width:74px}.logo{padding:12px 8px 16px}.logo img{width:55px}.menu a{justify-content:center;padding:14px 5px}.menu a span:not(.ico){display:none}.main{margin-left:74px;width:calc(100% - 74px)}.top{padding:0 16px}.brand strong{font-size:19px}.brand span{font-size:12px}.wrap{padding:12px}.hero{min-height:390px}.hero img{height:390px}.hero-copy{left:25px;top:38px}.hero h1{font-size:52px}.hero-role{font-size:20px}.grid{grid-template-columns:1fr}.profile{padding:22px}.name{font-size:32px}}
-@media(max-width:560px){.side{display:none}.main{margin-left:0;width:100%}.top{height:68px}.top-actions{display:none}.crumb{padding:12px 16px}.wrap{padding:10px}.hero{min-height:330px;border-radius:14px}.hero img{height:330px}.hero-copy{left:18px;top:28px;max-width:80%}.hero h1{font-size:43px}.hero-role{font-size:17px}.hero-quote{font-size:14px;margin-top:18px}.profile{margin-top:-20px;padding:18px;border-radius:14px}.name{font-size:28px}.story{font-size:15px}.helps{grid-template-columns:1fr 1fr}.help{font-size:13px;padding:14px 7px}}
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@500;700;800;900&display=swap');
+.handwritten{background:#fff!important;color:#111!important;font-family:'Caveat',cursive;font-size:25px;line-height:1.05;position:relative;text-align:center;border:0!important;font-weight:700}.handwritten b{color:#111}.smile{display:inline-grid;place-items:center;color:var(--red);font-family:Arial;font-size:34px;border:4px solid var(--red);border-radius:50%;width:42px;height:42px;margin-left:10px;vertical-align:middle}
+@media(max-width:850px){.side{width:74px}.logo{padding:12px 8px 16px}.logo img{width:55px}.menu a{justify-content:center;padding:14px 5px}.menu a span:not(.ico){display:none}.main{margin-left:74px;width:calc(100% - 74px)}.top{padding:0 16px}.brand strong{font-size:19px}.brand span{font-size:12px}.wrap{padding:12px}.hero{min-height:450px}.hero img{height:450px}.hero-copy{left:25px;top:38px}.hero h1{font-size:58px}.hero-role{font-size:21px}.hero-quote{left:auto;right:15px;top:15px;width:300px;font-size:16px}.grid{grid-template-columns:1fr}.profile{padding:22px}.name{font-size:32px}}
+@media(max-width:560px){.side{display:none}.main{margin-left:0;width:100%}.top{height:68px}.top-actions{display:none}.crumb{padding:12px 16px}.wrap{padding:10px}.hero{min-height:360px;border-radius:14px}.hero img{height:360px}.hero-copy{left:18px;top:28px;max-width:55%}.hero h1{font-size:46px}.hero-role{font-size:17px}.hero-quote{left:auto;right:8px;top:8px;width:48%;font-size:12px;padding:10px 12px}.handwritten{font-size:22px}.profile{margin-top:-20px;padding:18px;border-radius:14px}.name{font-size:28px}.story{font-size:15px}.helps{grid-template-columns:1fr 1fr}.help{font-size:13px;padding:14px 7px}}
 </style>
 </head>
 <body>
@@ -46,10 +48,9 @@ button,a{font:inherit}.app{min-height:100vh;display:flex}
     <section class="hero">
       <img src="../../Hairi.JPG" alt="Hairi - Perunding Kabinet & Interior" onerror="this.style.opacity='.12'">
       <div class="hero-copy">
-        <div class="hero-kicker">KENALI PERUNDING ANDA</div>
         <h1>Kenali <span>Hairi</span></h1>
         <div class="hero-role">Perunding Kabinet<br>& Interior</div>
-        <div class="hero-quote">“Bagi saya, setiap tempahan bukan sekadar nombor. Ia bermula dengan kepercayaan.”</div>
+        <div class="hero-quote">“Setiap rumah ada cerita, tugas saya membantu anda mencipta ruang yang lebih kemas, selesa dan sesuai dengan keperluan keluarga.”</div>
       </div>
     </section>
 
@@ -81,7 +82,7 @@ button,a{font:inherit}.app{min-height:100vh;display:flex}
             <div class="help"><span class="big">📄</span>Bantu Pilih Design & Material</div>
             <div class="help"><span class="big">⚙</span>Urus Tempahan Hingga Siap</div>
           </div>
-          <div class="note">Jangan segan untuk bertanya.<br><b>Saya akan bantu sebaik mungkin.</b> 🙂</div>
+          <div class="note handwritten">Jangan segan untuk bertanya.<br><b>Saya akan bantu sebaik mungkin.</b><span class="smile">☺</span></div>
         </aside>
       </div>
     </section>
