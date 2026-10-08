@@ -656,10 +656,12 @@ async function loadPublicWebsiteFeedback(){
    const rating=Math.max(0,Math.min(5,Number(r.rating)||0));
    const stars='★'.repeat(rating)+'☆'.repeat(5-rating);
    const name=esc(r.full_name||'Pengguna Website');
+   const rawPhone=String(r.phone||'').replace(/\\D/g,'');
+   const maskedPhone=rawPhone ? (rawPhone.length>=4 ? rawPhone.slice(0,-4)+'XXXX' : 'XXXX') : '';
    const date=r.created_at?new Date(r.created_at).toLocaleDateString('ms-MY',{day:'numeric',month:'long',year:'numeric'}):'';
    const comment=esc(r.explanation||'Pengguna memberikan penilaian kepada website kami.');
    const reply=esc(r.admin_reply||'');
-   return '<article class="feedback-public-card"><div class="feedback-public-stars">'+stars+'</div><div class="feedback-public-name">'+name+'</div><div class="feedback-public-date">'+date+'</div><div class="feedback-public-comment">'+comment.replace(/\n/g,'<br>')+'</div><div class="feedback-public-reply"><b>↩️ Balasan Saujana Sejati Ent</b><p>'+reply.replace(/\n/g,'<br>')+'</p></div></article>';
+   return '<article class="feedback-public-card"><div class="feedback-public-stars">'+stars+'</div><div class="feedback-public-name">'+name+'</div><div class="feedback-public-date">'+date+(maskedPhone?' · 📱 '+esc(maskedPhone):'')+'</div><div class="feedback-public-comment">'+comment.replace(/\n/g,'<br>')+'</div><div class="feedback-public-reply"><b>↩️ Balasan Saujana Sejati Ent</b><p>'+reply.replace(/\n/g,'<br>')+'</p></div></article>';
   }).join('')+'</div>'+(rows.length>=6?'<div class="feedback-public-more">Paparan terkini · Maklum balas lain akan dipaparkan secara berkala.</div>':'');
  }catch(e){console.error('Public feedback:',e);host.innerHTML='<div class="feedback-public-empty">Maklum balas sedang dikemas kini.</div>'+(e?.message?'<div style="font-size:11px;color:#999;text-align:center;margin-top:6px">'+String(e.message).replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]))+'</div>':'');}
 }
