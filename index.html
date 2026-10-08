@@ -169,7 +169,7 @@ const CATALOG=[['Kabinet Dapur','kabinet-dapur-01.jpg'],['Kabinet Dapur','kabine
 const MATERIALS={Melamine:{lower:150,upperStandard:240,upperCeiling:270},Formica:{lower:190,upperStandard:330,upperCeiling:370}};
 function money(n){return 'RM '+Number(n||0).toLocaleString('ms-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}
 
-function openAgentProfile(){const slug=(typeof getAgentSlug==='function'&&getAgentSlug())||'hairi';const base='https://saujanasejati.github.io/Saujana-Sejati-Customer/';window.location.href=base+'admin/'+encodeURIComponent(slug)+'/profil.html?v=6';}
+function openAgentProfile(){const slug=(typeof getAgentSlug==='function'&&getAgentSlug())||'hairi';const profileDir={hairi:'Hairi',amirul:'Amirul'}[slug]||slug;window.top.location.href='https://saujanasejati.github.io/Saujana-Sejati-Customer/admin/'+encodeURIComponent(profileDir)+'/profil.html?v=7';}
 function getAgentSlug(){
   const parts=window.location.pathname.split('/').filter(Boolean).map(x=>decodeURIComponent(x).toLowerCase().trim());
   // PIC utama: /admin/Hairi dan /admin/Amirul
