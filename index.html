@@ -663,5 +663,74 @@ async function loadPublicWebsiteFeedback(){
   }).join('')+'</div>'+(rows.length>=6?'<div class="feedback-public-more">Paparan terkini · Maklum balas lain akan dipaparkan secara berkala.</div>':'');
  }catch(e){console.error('Public feedback:',e);host.innerHTML='<div class="feedback-public-empty">Maklum balas sedang dikemas kini.</div>';}
 }
-</script><section id="profile" class="screen"><div style="width:100%;height:calc(100vh - 76px);min-height:700px;background:#fff"><iframe id="agentProfileFrame" title="Profil Perunding" style="width:100%;height:100%;border:0;display:block" loading="eager"></iframe></div></section>
+</script><section id="profile" class="screen">
+<style>
+.profile-sheet{max-width:1100px;margin:auto;background:#fff;color:#17212b}
+.profile-hero{position:relative;min-height:520px;display:flex;align-items:flex-end;overflow:hidden;background:#101923}
+.profile-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%}
+.profile-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,#101923e8 100%)}
+.profile-hero-text{position:relative;z-index:2;color:#fff;padding:32px 24px;width:100%}
+.profile-kicker{font-size:12px;letter-spacing:4px;font-weight:900;color:#ff3038}
+.profile-hero h1{font-size:clamp(38px,7vw,64px);line-height:.95;margin:8px 0}
+.profile-role{font-size:18px;font-weight:900}
+.profile-quote{max-width:720px;margin-top:14px;font-size:16px;line-height:1.55;color:#eee}
+.profile-body{padding:24px}
+.profile-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:24px}
+.profile-name{font-size:32px;font-weight:1000;margin:8px 0}
+.profile-badge{display:inline-block;background:#ffe8e9;color:#c5161e;padding:8px 12px;border-radius:999px;font-weight:900}
+.profile-story{margin-top:18px;line-height:1.7}
+.profile-story p{margin:0 0 14px}
+.profile-info{display:grid;gap:10px}
+.profile-card{border:1px solid #ddd;border-radius:12px;padding:13px;background:#fafafa}
+.profile-card span{display:block;color:#68707b;font-size:12px}.profile-card b{font-size:16px}
+.profile-help{margin-top:20px}.profile-help h3{margin-bottom:10px}
+.profile-help-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.profile-help-item{padding:13px;border:1px solid #ddd;border-radius:10px;font-weight:900}
+.profile-trust{margin-top:20px;background:#101923;color:#fff;border-radius:14px;padding:18px;font-size:17px;line-height:1.55}
+@media(max-width:750px){.profile-hero{min-height:460px}.profile-grid{grid-template-columns:1fr}.profile-body{padding:18px}.profile-help-grid{grid-template-columns:1fr 1fr}}
+</style>
+<div class="profile-sheet">
+  <div class="profile-hero">
+    <img src="https://saujanasejati.github.io/Saujana-Sejati-Customer/Hairi.JPG?v=1" alt="Hairi">
+    <div class="profile-hero-text">
+      <div class="profile-kicker">KENALI PERUNDING ANDA</div>
+      <h1>Mohamad Hairi<br>bin Azmi Tham</h1>
+      <div class="profile-role">Perunding Kabinet & Interior</div>
+      <div class="profile-quote">“Setiap rumah ada cerita, tugas saya membantu anda mencipta ruang yang lebih kemas, selesa dan sesuai dengan keperluan keluarga.”</div>
+    </div>
+  </div>
+  <div class="profile-body">
+    <div class="profile-grid">
+      <div>
+        <div class="profile-name">👋 Kenali Hairi</div>
+        <div class="profile-badge">Perunding Kabinet & Interior</div>
+        <div class="profile-story">
+          <p>Assalamualaikum & salam sejahtera.</p>
+          <p>Saya bukan pemilik Saujana Sejati Ent. Saya pernah berada di belakang tabir membantu abang ipar saya menguruskan perniagaan ini — daripada mencari customer, mengurus tempahan, sehinggalah turun ke tapak membantu pemasangan kabinet.</p>
+          <p>Daripada pengalaman itu, saya belajar satu perkara: customer bukan hanya perlukan kabinet yang cantik. Mereka perlukan urusan yang <b>mudah, jelas dan boleh dipercayai.</b></p>
+          <p>Sebab itu saya cuba bina sistem booking online Saujana Sejati — supaya customer lebih mudah bertanya, melihat pilihan dan membuat tempahan.</p>
+          <p>Saya mungkin bukan orang yang paling hebat dalam bidang ini. Tapi saya faham bagaimana rasanya bermula dari mencari customer hingga turun sendiri ke tapak.</p>
+        </div>
+      </div>
+      <aside>
+        <div class="profile-info">
+          <div class="profile-card"><span>Umur</span><b>36 tahun</b></div>
+          <div class="profile-card"><span>Berasal dari</span><b>Kuala Kangsar, Perak</b></div>
+          <div class="profile-card"><span>Pekerjaan</span><b>Penjawat Awam</b></div>
+        </div>
+        <div class="profile-help">
+          <h3>— Apa Yang Saya Bantu</h3>
+          <div class="profile-help-grid">
+            <div class="profile-help-item">📏 Free Ukuran</div>
+            <div class="profile-help-item">💬 Free Konsultasi</div>
+            <div class="profile-help-item">📄 Bantu Pilih Design</div>
+            <div class="profile-help-item">⚙️ Urus Tempahan</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="profile-trust">“Bagi saya, setiap tempahan bukan sekadar nombor. Ia bermula dengan kepercayaan. Dan kepercayaan itu yang saya cuba jaga.”<br><b>— Hairi</b></div>
+  </div>
+</div>
+</section>
 </body></html>
