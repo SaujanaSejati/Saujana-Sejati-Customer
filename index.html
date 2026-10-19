@@ -319,8 +319,29 @@ function renderCatalogPreview(){
   if(!item)return;
   title.textContent=item.name||'Preview Katalog';
   if(count)count.textContent=(catalogGalleryIndex+1)+' / '+catalogGalleryItems.length;
-  image.onerror=()=>{image.onerror=null;image.alt='Gambar tidak dapat dimuatkan';image.style.objectFit='contain';};
-  image.src=item.url||item.image_url||'';
+  // Cuba semua sumber gambar yang tersedia, sama seperti kad katalog.
+  const candidates=[];
+  const addCandidate=url=>{const value=String(url||'').trim();if(value&&!candidates.includes(value))candidates.push(value);};
+  addCandidate(item.url);
+  const raw=String(item.image_url||'').trim();
+  if(raw)addCandidate(/^https?:\/\//i.test(raw)?raw:'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+raw.replace(/^\.\//,'').replace(/^\//,''));
+  const legacyId=String(item.legacy_static_id||item.id||'');
+  const staticMatch=typeof customerStaticCatalogRows==='function'?customerStaticCatalogRows().find(row=>row.id===legacyId):null;
+  if(staticMatch)addCandidate(staticMatch.image_url);
+  let attempt=0;
+  image.onerror=()=>{
+    attempt++;
+    if(attempt<candidates.length){image.src=candidates[attempt];return;}
+    image.onerror=null;
+    image.removeAttribute('src');
+    image.alt='Gambar tidak tersedia';
+    image.style.objectFit='contain';
+    image.style.background='#111';
+  };
+  image.alt=item.name||'Gambar katalog';
+  image.style.background='transparent';
+  image.src=candidates[0]||'';
+  if(!candidates.length){image.onerror=null;image.alt='Gambar tidak tersedia';}
 }
 function changeCatalogPreview(step){
   if(!catalogGalleryItems.length)return;
