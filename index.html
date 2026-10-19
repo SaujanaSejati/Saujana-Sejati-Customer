@@ -326,8 +326,14 @@ function renderCatalogPreview(){
   const raw=String(item.image_url||'').trim();
   if(raw)addCandidate(/^https?:\/\//i.test(raw)?raw:'https://saujanasejati.github.io/Saujana-Sejati-Customer/'+raw.replace(/^\.\//,'').replace(/^\//,''));
   const legacyId=String(item.legacy_static_id||item.id||'');
-  const staticMatch=typeof customerStaticCatalogRows==='function'?customerStaticCatalogRows().find(row=>row.id===legacyId):null;
+  const staticRows=typeof customerStaticCatalogRows==='function'?customerStaticCatalogRows():[];
+  const staticMatch=staticRows.find(row=>row.id===legacyId);
   if(staticMatch)addCandidate(staticMatch.image_url);
+  // Jika rekod Supabase tiada legacy ID, cuba gambar statik kategori yang sama.
+  // Contoh Rak TV akan mencuba rak-tv-01.jpg hingga rak-tv-04.jpg.
+  const normalizedCategory=String(item.category||item.name||'').trim().toLowerCase();
+  staticRows.filter(row=>String(row.category||row.name||'').trim().toLowerCase()===normalizedCategory)
+    .forEach(row=>addCandidate(row.image_url));
   let attempt=0;
   image.onerror=()=>{
     attempt++;
