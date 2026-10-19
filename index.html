@@ -883,7 +883,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    if(/katalog|catalog|produk/.test(lower)){send('katalog','catalog_open');recordPage('katalog');}
    else if(/booking|tempahan|tempah/.test(lower)){send('booking','booking_click');recordPage('booking');}
    else if(/whatsapp|hubungi|mesej/.test(lower)){send(page,'whatsapp_click');}
-   else if(/projek|portfolio/.test(lower))recordPage('projek);
+   else if(/projek|portfolio/.test(lower))recordPage('projek');
    else if(/maklum balas|review|kepuasan/.test(lower))recordPage('maklum_balas');
    else if(/home|utama|laman utama/.test(lower))recordPage('home');
   },true);
